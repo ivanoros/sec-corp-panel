@@ -17,6 +17,8 @@ describe('HttpFundingPanelGateway', () => {
     const runtimeConfig: RuntimeConfig = {
       agGridEnterpriseLicenseKey: null,
       apiBaseUrl: '/funding-api/',
+      businessDate: '2026-07-25',
+      fundingPanelDataSource: 'http',
     };
 
     TestBed.configureTestingModule({

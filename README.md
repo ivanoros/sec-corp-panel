@@ -22,9 +22,15 @@ loads:
 window.__SEC_CORP_PANEL_CONFIG__ = {
   apiBaseUrl: '/api',
   agGridEnterpriseLicenseKey: '<injected by the deployment environment>',
+  businessDate: '2026-07-28',
+  fundingPanelDataSource: 'http',
 };
 ```
 
 The AG Grid Enterprise license key must be supplied at runtime and must not be
-committed to this repository. The application uses `/api` and no license key
-when the configuration is absent.
+committed to this repository.
+
+`fundingPanelDataSource` must be `http` in an integrated environment. The
+self-contained default is `mock` with the representative `2026-07-25` business
+date so local development does not require a backend. The shell or deployment
+must inject the active ISO business date before the Angular bundle loads.

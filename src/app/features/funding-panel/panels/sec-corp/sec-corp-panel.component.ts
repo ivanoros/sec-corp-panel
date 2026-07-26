@@ -3,11 +3,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
 import { FundingPanelStore } from '../../application/funding-panel.store';
-import { FUNDING_PANEL_GATEWAY } from '../../data-access/funding-panel.gateway';
-import { MockFundingPanelGateway } from '../../data-access/mock-funding-panel.gateway';
+import { FUNDING_PANEL_DATA_ACCESS_PROVIDERS } from '../../data-access/funding-panel-data.providers';
 import { FundingGridComponent } from '../../presentation/funding-grid/funding-grid.component';
-
-const SEC_CORP_MOCK_BUSINESS_DATE = '2026-07-25';
 
 @Component({
   selector: 'app-sec-corp-panel',
@@ -16,14 +13,7 @@ const SEC_CORP_MOCK_BUSINESS_DATE = '2026-07-25';
   templateUrl: './sec-corp-panel.component.html',
   styleUrl: './sec-corp-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    FundingPanelStore,
-    MockFundingPanelGateway,
-    {
-      provide: FUNDING_PANEL_GATEWAY,
-      useExisting: MockFundingPanelGateway,
-    },
-  ],
+  providers: [FundingPanelStore, ...FUNDING_PANEL_DATA_ACCESS_PROVIDERS],
 })
 export class SecCorpPanelComponent {
   readonly store = inject(FundingPanelStore);
@@ -34,7 +24,7 @@ export class SecCorpPanelComponent {
     configureAgGrid(this.runtimeConfig);
     this.store.load({
       panelCode: 'sec-corp',
-      businessDate: SEC_CORP_MOCK_BUSINESS_DATE,
+      businessDate: this.runtimeConfig.businessDate,
     });
   }
 

@@ -6,7 +6,9 @@ import type { RuntimeConfig } from '../config/runtime-config';
 const FUNDING_GRID_MODULES = [ClientSideRowModelModule];
 let modulesRegistered = false;
 
-export function configureAgGrid(runtimeConfig: RuntimeConfig): void {
+export function configureAgGrid(
+  runtimeConfig: Pick<RuntimeConfig, 'agGridEnterpriseLicenseKey'>,
+): void {
   if (!modulesRegistered) {
     ModuleRegistry.registerModules(FUNDING_GRID_MODULES);
     modulesRegistered = true;

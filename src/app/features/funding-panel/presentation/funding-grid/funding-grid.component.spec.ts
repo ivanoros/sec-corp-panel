@@ -20,7 +20,6 @@ describe('FundingGridComponent', () => {
   beforeAll(() => {
     configureAgGrid({
       agGridEnterpriseLicenseKey: null,
-      apiBaseUrl: '/api',
     });
   });
 

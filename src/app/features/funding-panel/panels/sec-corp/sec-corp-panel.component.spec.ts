@@ -14,6 +14,8 @@ describe('SecCorpPanelComponent', () => {
           useValue: {
             agGridEnterpriseLicenseKey: null,
             apiBaseUrl: '/api',
+            businessDate: '2026-07-25',
+            fundingPanelDataSource: 'mock',
           },
         },
       ],

@@ -5,6 +5,8 @@ describe('readRuntimeConfig', () => {
     expect(readRuntimeConfig(undefined)).toEqual({
       agGridEnterpriseLicenseKey: null,
       apiBaseUrl: '/api',
+      businessDate: '2026-07-25',
+      fundingPanelDataSource: 'mock',
     });
   });
 
@@ -13,10 +15,28 @@ describe('readRuntimeConfig', () => {
       readRuntimeConfig({
         agGridEnterpriseLicenseKey: ' enterprise-license ',
         apiBaseUrl: ' /funding-api ',
+        businessDate: '2026-07-28',
+        fundingPanelDataSource: 'http',
       }),
     ).toEqual({
       agGridEnterpriseLicenseKey: 'enterprise-license',
       apiBaseUrl: '/funding-api',
+      businessDate: '2026-07-28',
+      fundingPanelDataSource: 'http',
+    });
+  });
+
+  it('rejects invalid operational values without accepting ambiguous dates or modes', () => {
+    expect(
+      readRuntimeConfig({
+        businessDate: '2026-02-30',
+        fundingPanelDataSource: 'network',
+      }),
+    ).toEqual({
+      agGridEnterpriseLicenseKey: null,
+      apiBaseUrl: '/api',
+      businessDate: '2026-07-25',
+      fundingPanelDataSource: 'mock',
     });
   });
 

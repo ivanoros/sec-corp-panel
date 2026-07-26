@@ -21,6 +21,7 @@ import { FundingPanelStore } from './funding-panel.store';
 
 describe('FundingPanelStore', () => {
   let gateway: ControllableFundingPanelGateway;
+  let host: StandalonePanelHostAdapter;
   let store: FundingPanelStore;
 
   beforeEach(() => {
@@ -41,6 +42,7 @@ describe('FundingPanelStore', () => {
     });
 
     gateway = TestBed.inject(ControllableFundingPanelGateway);
+    host = TestBed.inject(StandalonePanelHostAdapter);
     store = TestBed.inject(FundingPanelStore);
     store.load({ panelCode: 'sec-corp', businessDate: '2026-07-25' });
     gateway.resolveGet(createSecCorpReportFixture());
@@ -145,6 +147,19 @@ describe('FundingPanelStore', () => {
 
     await vi.waitFor(() => {
       expect(gateway.getCalls).toHaveLength(2);
+    });
+  });
+
+  it('retrieves the same business date when the shell requests a manual refresh', async () => {
+    await waitForReady(store);
+
+    host.requestRefresh();
+
+    await vi.waitFor(() => {
+      expect(gateway.getCalls).toEqual([
+        { panelCode: 'sec-corp', businessDate: '2026-07-25' },
+        { panelCode: 'sec-corp', businessDate: '2026-07-25' },
+      ]);
     });
   });
 });
