@@ -32,6 +32,33 @@
     color: #ff7182;
   }
 
+  .funding-grid__cell--editable {
+    cursor: text;
+  }
+
+  .funding-grid__cell--editable:hover {
+    box-shadow: inset 0 0 0 1px rgb(101 183 177 / 45%);
+  }
+
+  .funding-grid__cell--dirty::after {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #f2c86b;
+    content: '';
+  }
+
+  .funding-grid__cell--preview {
+    box-shadow: inset 0 0 0 1px #72bbb5;
+  }
+
+  .funding-grid__cell--invalid {
+    box-shadow: inset 0 0 0 1px #ff7182;
+  }
+
   .ag-row.funding-grid__row--opening-balance .ag-cell,
   .ag-row.funding-grid__row--section .ag-cell,
   .ag-row.funding-grid__row--closing-balance .ag-cell {

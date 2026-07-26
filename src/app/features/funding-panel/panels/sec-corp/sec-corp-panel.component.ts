@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
@@ -27,6 +27,7 @@ const SEC_CORP_MOCK_BUSINESS_DATE = '2026-07-25';
 })
 export class SecCorpPanelComponent {
   readonly store = inject(FundingPanelStore);
+  readonly confirmingConflictDiscard = signal(false);
   private readonly runtimeConfig = inject(APP_RUNTIME_CONFIG);
 
   constructor() {
@@ -39,5 +40,22 @@ export class SecCorpPanelComponent {
 
   retryLoad(): void {
     this.store.requestRefresh();
+  }
+
+  retrySave(): void {
+    this.store.retrySave();
+  }
+
+  requestConflictDiscard(): void {
+    this.confirmingConflictDiscard.set(true);
+  }
+
+  cancelConflictDiscard(): void {
+    this.confirmingConflictDiscard.set(false);
+  }
+
+  confirmConflictDiscard(): void {
+    this.confirmingConflictDiscard.set(false);
+    this.store.discardChangesAndRefresh();
   }
 }

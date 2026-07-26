@@ -40,13 +40,41 @@ describe('funding grid display policy', () => {
   });
 
   it('marks negative amounts through the centralized cell policy', () => {
-    expect(getFundingValueCellClasses(asDecimalString('-1.00'))).toEqual([
+    const negativeCell = {
+      ...requireRow(rows, 'occ').cells.snapshot0830,
+      value: asDecimalString('-1.00'),
+    };
+    const positiveCell = {
+      ...negativeCell,
+      value: asDecimalString('1.00'),
+    };
+
+    expect(getFundingValueCellClasses(negativeCell)).toEqual([
       FUNDING_GRID_CELL_CLASSES.numeric,
       FUNDING_GRID_CELL_CLASSES.negative,
+      FUNDING_GRID_CELL_CLASSES.editable,
     ]);
-    expect(getFundingValueCellClasses(asDecimalString('1.00'))).toEqual([
+    expect(getFundingValueCellClasses(positiveCell)).toEqual([
       FUNDING_GRID_CELL_CLASSES.numeric,
+      FUNDING_GRID_CELL_CLASSES.editable,
     ]);
+  });
+
+  it('adds dirty, preview, and invalid state classes from the view model', () => {
+    const cell = {
+      ...requireRow(rows, 'occ').cells.snapshot0830,
+      dirty: true,
+      preview: true,
+      validationMessage: 'Enter an amount.',
+    };
+
+    expect(getFundingValueCellClasses(cell)).toEqual(
+      expect.arrayContaining([
+        FUNDING_GRID_CELL_CLASSES.dirty,
+        FUNDING_GRID_CELL_CLASSES.preview,
+        FUNDING_GRID_CELL_CLASSES.invalid,
+      ]),
+    );
   });
 });
 

@@ -1,0 +1,54 @@
+.funding-amount-editor {
+  position: relative;
+  min-width: 128px;
+  padding: 1px;
+  border: 1px solid #72bbb5;
+  background: #111314;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+}
+
+.funding-amount-editor--invalid {
+  border-color: #ff7182;
+}
+
+.funding-amount-editor__input {
+  width: 100%;
+  height: 20px;
+  padding: 0 8px;
+  border: 0;
+  outline: 0;
+  background: #111314;
+  color: #f4f6f6;
+  font:
+    600 12px/20px Inter,
+    'Segoe UI',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.funding-amount-editor__input::selection {
+  background: #357b77;
+  color: #fff;
+}
+
+.funding-amount-editor__error {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + 3px);
+  right: -1px;
+  width: max-content;
+  max-width: 260px;
+  padding: 4px 7px;
+  border: 1px solid #a84c5a;
+  border-radius: 2px;
+  background: #321b20;
+  color: #ffb3bd;
+  font:
+    500 11px/1.35 Inter,
+    'Segoe UI',
+    sans-serif;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 48%);
+}

@@ -17,6 +17,47 @@
     </div>
   } @else if (store.viewModel(); as viewModel) {
     <app-funding-grid [viewModel]="viewModel" />
+    @if (store.saveStatus() === 'saving') {
+      <div aria-live="polite" class="sec-corp-panel__save-state" data-testid="saving-state">
+        Saving…
+      </div>
+    } @else if (store.saveStatus() === 'error') {
+      <div class="sec-corp-panel__save-state sec-corp-panel__save-state--error" role="alert">
+        <span>{{ store.errorMessage() ?? 'Unable to save changes.' }}</span>
+        <button class="sec-corp-panel__save-action" type="button" (click)="retrySave()">
+          Retry
+        </button>
+      </div>
+    } @else if (store.saveStatus() === 'conflict') {
+      <div class="sec-corp-panel__save-state sec-corp-panel__save-state--conflict" role="alert">
+        <span>Another user updated this report. Your edits are preserved.</span>
+        @if (confirmingConflictDiscard()) {
+          <span>This cannot be undone.</span>
+          <button
+            class="sec-corp-panel__save-action"
+            type="button"
+            (click)="cancelConflictDiscard()"
+          >
+            Keep edits
+          </button>
+          <button
+            class="sec-corp-panel__save-action sec-corp-panel__save-action--destructive"
+            type="button"
+            (click)="confirmConflictDiscard()"
+          >
+            Confirm discard
+          </button>
+        } @else {
+          <button
+            class="sec-corp-panel__save-action sec-corp-panel__save-action--destructive"
+            type="button"
+            (click)="requestConflictDiscard()"
+          >
+            Discard my edits and reload
+          </button>
+        }
+      </div>
+    }
   } @else {
     <div class="sec-corp-panel__status">No funding report is available.</div>
   }

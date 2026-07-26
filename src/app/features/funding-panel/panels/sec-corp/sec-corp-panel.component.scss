@@ -6,10 +6,65 @@
 }
 
 .sec-corp-panel {
+  position: relative;
   min-width: 0;
   min-height: 0;
   background: #1d2021;
   color: #eef2f2;
+}
+
+.sec-corp-panel__save-state {
+  position: absolute;
+  z-index: 4;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(620px, calc(100% - 20px));
+  padding: 5px 8px;
+  border: 1px solid #5b7472;
+  border-radius: 2px;
+  background: rgb(26 35 35 / 96%);
+  color: #dce5e4;
+  font-size: 11px;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 42%);
+}
+
+.sec-corp-panel__save-state--error {
+  border-color: #a65360;
+  background: rgb(54 27 32 / 97%);
+  color: #ffc0c8;
+}
+
+.sec-corp-panel__save-state--conflict {
+  border-color: #b98b43;
+  background: rgb(55 42 24 / 97%);
+  color: #f4d8a4;
+}
+
+.sec-corp-panel__save-action {
+  flex: none;
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sec-corp-panel__save-action:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.sec-corp-panel__save-action:focus-visible {
+  outline: 2px solid #8bd0ca;
+  outline-offset: 2px;
+}
+
+.sec-corp-panel__save-action--destructive {
+  color: #ffd394;
 }
 
 .sec-corp-panel__status {

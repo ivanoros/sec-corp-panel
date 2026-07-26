@@ -3,18 +3,21 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  inject,
   input,
 } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import type {
   CellClassParams,
   ColDef,
+  EditableCallbackParams,
   GetRowIdParams,
   RowClassParams,
   ValueFormatterParams,
   ValueGetterParams,
 } from 'ag-grid-community';
 
+import { FundingPanelStore } from '../../application/funding-panel.store';
 import type { ReportPeriod } from '../../domain/funding-report';
 import {
   type FundingGridCellViewModel,
@@ -28,6 +31,7 @@ import {
   getFundingRowClass,
   getFundingValueCellClasses,
 } from './funding-grid-display';
+import { FundingAmountCellEditorComponent } from './funding-amount-cell-editor.component';
 import { FUNDING_GRID_THEME } from './funding-grid.theme';
 
 type FundingColumnValue = FundingGridCellViewModel | string | null;
@@ -43,6 +47,8 @@ type FundingColumnDef = ColDef<FundingGridRowViewModel, FundingColumnValue>;
   encapsulation: ViewEncapsulation.None,
 })
 export class FundingGridComponent {
+  private readonly store = inject(FundingPanelStore);
+
   readonly viewModel = input.required<FundingGridViewModel>();
 
   readonly rowData = computed(() => [...this.viewModel().rows]);
@@ -60,6 +66,10 @@ export class FundingGridComponent {
   readonly getRowId = ({ data }: GetRowIdParams<FundingGridRowViewModel>): string => data.id;
   readonly getRowClass = ({ data }: RowClassParams<FundingGridRowViewModel>): string | undefined =>
     data === undefined ? undefined : getFundingRowClass(data);
+
+  onCellEditingStopped(): void {
+    this.store.commitEdit();
+  }
 }
 
 export function createFundingColumnDefs(periods: readonly ReportPeriod[]): FundingColumnDef[] {
@@ -93,14 +103,30 @@ function createPeriodColumn(period: ReportPeriod): FundingColumnDef {
       value,
     }: ValueFormatterParams<FundingGridRowViewModel, FundingColumnValue>): string =>
       isFundingCell(value) ? formatFundingAmount(value.value) : '',
+    editable: ({
+      data,
+    }: EditableCallbackParams<FundingGridRowViewModel, FundingColumnValue>): boolean =>
+      data === undefined ? false : isFundingGridCellEditable(data, period),
     cellClass: ({
       value,
     }: CellClassParams<FundingGridRowViewModel, FundingColumnValue>): string[] =>
       isFundingCell(value)
-        ? getFundingValueCellClasses(value.value)
+        ? getFundingValueCellClasses(value)
         : [FUNDING_GRID_CELL_CLASSES.numeric],
     headerClass: 'funding-grid__header--numeric',
+    ...(period.kind === 'snapshot'
+      ? {
+          cellEditor: FundingAmountCellEditorComponent,
+        }
+      : {}),
   };
+}
+
+export function isFundingGridCellEditable(
+  row: FundingGridRowViewModel,
+  period: ReportPeriod,
+): boolean {
+  return period.kind === 'snapshot' && row.cells[period.id].editable;
 }
 
 function isFundingCell(value: FundingColumnValue | undefined): value is FundingGridCellViewModel {

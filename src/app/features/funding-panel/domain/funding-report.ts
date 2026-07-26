@@ -74,6 +74,10 @@ export interface SaveFundingReportCommand {
   readonly snapshotValues: Readonly<Record<string, SnapshotValueMap>>;
 }
 
+export function isSnapshotPeriodId(value: string): value is SnapshotPeriodId {
+  return SNAPSHOT_PERIOD_IDS.some((periodId) => periodId === value);
+}
+
 export function selectSnapshotValues(
   report: FundingReport,
 ): Readonly<Record<string, SnapshotValueMap>> {

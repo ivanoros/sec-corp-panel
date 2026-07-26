@@ -1,4 +1,8 @@
-import type { FundingGridRowViewModel, FundingGridValue } from '../funding-grid.viewmodel';
+import type {
+  FundingGridCellViewModel,
+  FundingGridRowViewModel,
+  FundingGridValue,
+} from '../funding-grid.viewmodel';
 
 export const FUNDING_GRID_ROW_CLASSES = {
   closingBalance: 'funding-grid__row--closing-balance',
@@ -9,8 +13,12 @@ export const FUNDING_GRID_ROW_CLASSES = {
 } as const;
 
 export const FUNDING_GRID_CELL_CLASSES = {
+  dirty: 'funding-grid__cell--dirty',
+  editable: 'funding-grid__cell--editable',
+  invalid: 'funding-grid__cell--invalid',
   negative: 'funding-grid__cell--negative',
   numeric: 'funding-grid__cell--numeric',
+  preview: 'funding-grid__cell--preview',
 } as const;
 
 export function formatFundingAmount(value: FundingGridValue): string {
@@ -55,10 +63,30 @@ export function getFundingRowClass(row: FundingGridRowViewModel): string {
   }
 }
 
-export function getFundingValueCellClasses(value: FundingGridValue): string[] {
-  return value?.startsWith('-')
-    ? [FUNDING_GRID_CELL_CLASSES.numeric, FUNDING_GRID_CELL_CLASSES.negative]
-    : [FUNDING_GRID_CELL_CLASSES.numeric];
+export function getFundingValueCellClasses(cell: FundingGridCellViewModel): string[] {
+  const classes: string[] = [FUNDING_GRID_CELL_CLASSES.numeric];
+
+  if (cell.value?.startsWith('-')) {
+    classes.push(FUNDING_GRID_CELL_CLASSES.negative);
+  }
+
+  if (cell.editable) {
+    classes.push(FUNDING_GRID_CELL_CLASSES.editable);
+  }
+
+  if (cell.dirty) {
+    classes.push(FUNDING_GRID_CELL_CLASSES.dirty);
+  }
+
+  if (cell.preview) {
+    classes.push(FUNDING_GRID_CELL_CLASSES.preview);
+  }
+
+  if (cell.validationMessage !== null) {
+    classes.push(FUNDING_GRID_CELL_CLASSES.invalid);
+  }
+
+  return classes;
 }
 
 export class FundingGridDisplayError extends Error {
