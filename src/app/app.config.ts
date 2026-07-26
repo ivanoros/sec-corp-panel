@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { provideBrowserGlobalErrorListeners, type ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
@@ -8,6 +9,7 @@ export function createAppConfig(runtimeConfig: RuntimeConfig): ApplicationConfig
   return {
     providers: [
       provideBrowserGlobalErrorListeners(),
+      provideHttpClient(),
       provideRouter(routes),
       {
         provide: APP_RUNTIME_CONFIG,
