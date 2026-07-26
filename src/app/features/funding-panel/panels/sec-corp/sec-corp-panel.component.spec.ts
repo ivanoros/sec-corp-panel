@@ -1,8 +1,25 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
+import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
+import { FundingGridComponent } from '../../presentation/funding-grid/funding-grid.component';
 import { SecCorpPanelComponent } from './sec-corp-panel.component';
 
 describe('SecCorpPanelComponent', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: APP_RUNTIME_CONFIG,
+          useValue: {
+            agGridEnterpriseLicenseKey: null,
+            apiBaseUrl: '/api',
+          },
+        },
+      ],
+    });
+  });
+
   it('mounts a shell-owned panel surface and loads its provider-scoped report', async () => {
     const fixture = TestBed.createComponent(SecCorpPanelComponent);
 
@@ -18,6 +35,7 @@ describe('SecCorpPanelComponent', () => {
       fixture.detectChanges();
       expect(panel?.dataset['loadStatus']).toBe('ready');
       expect(fixture.componentInstance.store.viewModel()?.rows).toHaveLength(37);
+      expect(fixture.debugElement.query(By.directive(FundingGridComponent))).not.toBeNull();
     });
   });
 

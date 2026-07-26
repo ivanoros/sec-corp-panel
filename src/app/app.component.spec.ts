@@ -3,12 +3,22 @@ import { provideRouter, Router } from '@angular/router';
 
 import { AppComponent } from './app.component';
 import { routes } from './app.routes';
+import { APP_RUNTIME_CONFIG } from './core/config/runtime-config';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter(routes)],
+      providers: [
+        provideRouter(routes),
+        {
+          provide: APP_RUNTIME_CONFIG,
+          useValue: {
+            agGridEnterpriseLicenseKey: null,
+            apiBaseUrl: '/api',
+          },
+        },
+      ],
     }).compileComponents();
   });
 

@@ -4,4 +4,20 @@
   class="sec-corp-panel"
   [attr.data-load-status]="store.loadStatus()"
   data-testid="sec-corp-panel"
-></main>
+>
+  @if (store.loadStatus() === 'loading') {
+    <div aria-live="polite" class="sec-corp-panel__status" data-testid="loading-state">
+      <span aria-hidden="true" class="sec-corp-panel__spinner"></span>
+      <span>Loading funding report…</span>
+    </div>
+  } @else if (store.loadStatus() === 'error') {
+    <div class="sec-corp-panel__status sec-corp-panel__status--error" role="alert">
+      <span>{{ store.errorMessage() ?? 'Unable to load the funding report.' }}</span>
+      <button class="sec-corp-panel__retry" type="button" (click)="retryLoad()">Try again</button>
+    </div>
+  } @else if (store.viewModel(); as viewModel) {
+    <app-funding-grid [viewModel]="viewModel" />
+  } @else {
+    <div class="sec-corp-panel__status">No funding report is available.</div>
+  }
+</main>
