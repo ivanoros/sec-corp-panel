@@ -1,9 +1,26 @@
-import { ClientSideRowModelModule, ModuleRegistry } from 'ag-grid-community';
+import {
+  CellStyleModule,
+  ClientSideRowModelModule,
+  CustomEditorModule,
+  ModuleRegistry,
+  RenderApiModule,
+  RowStyleModule,
+  TextEditorModule,
+  TooltipModule,
+} from 'ag-grid-community';
 import { LicenseManager } from 'ag-grid-enterprise';
 
 import type { RuntimeConfig } from '../config/runtime-config';
 
-const FUNDING_GRID_MODULES = [ClientSideRowModelModule];
+const FUNDING_GRID_MODULES = [
+  CellStyleModule,
+  ClientSideRowModelModule,
+  CustomEditorModule,
+  RenderApiModule,
+  RowStyleModule,
+  TextEditorModule,
+  TooltipModule,
+];
 let modulesRegistered = false;
 
 export function configureAgGrid(

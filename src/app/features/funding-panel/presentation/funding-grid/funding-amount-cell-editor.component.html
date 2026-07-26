@@ -5,9 +5,10 @@
 >
   <input
     #amountInput
-    aria-label="Funding amount"
-    [attr.aria-describedby]="validation().isValid ? null : 'funding-editor-error'"
+    [attr.aria-describedby]="validation().isValid ? null : errorId"
     [attr.aria-invalid]="!validation().isValid"
+    [attr.aria-label]="inputLabel()"
+    aria-keyshortcuts="Enter Tab Escape"
     autocomplete="off"
     class="funding-amount-editor__input"
     inputmode="decimal"
@@ -18,7 +19,7 @@
     (keydown)="onKeyDown($event)"
   />
   @if (!validation().isValid) {
-    <span class="funding-amount-editor__error" id="funding-editor-error" role="alert">
+    <span class="funding-amount-editor__error" [id]="errorId" role="alert">
       {{ validation().message }}
     </span>
   }

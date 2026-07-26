@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AgGridAngular } from 'ag-grid-angular';
+import type { GridReadyEvent } from 'ag-grid-community';
 
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
 import { FundingPanelStore } from '../../application/funding-panel.store';
@@ -46,7 +47,14 @@ describe('FundingGridComponent', () => {
     const gridDebugElement = fixture.debugElement.query(By.directive(AgGridAngular));
     const grid = gridDebugElement.componentInstance as AgGridAngular<FundingGridRowViewModel>;
 
-    expect(gridDebugElement.nativeElement.getAttribute('aria-label')).toBe('Funding report');
+    expect(gridDebugElement.nativeElement.getAttribute('aria-label')).toBe(
+      'Sec Corp funding report for 2026-07-25',
+    );
+    const descriptionId = gridDebugElement.nativeElement.getAttribute('aria-describedby') as string;
+    const description = fixture.nativeElement.querySelector(`#${descriptionId}`) as HTMLElement;
+
+    expect(description.textContent).toContain('Currency USD.');
+    expect(description.textContent).toContain('LIVE and Opps funding are read-only');
     expect(grid.rowData).toHaveLength(37);
     expect(grid.columnDefs?.map(({ headerName }) => headerName)).toEqual([
       'Bucket',
@@ -60,6 +68,32 @@ describe('FundingGridComponent', () => {
     expect(grid.stopEditingWhenCellsLoseFocus).toBe(true);
     expect(grid.invalidEditValueMode).toBe('block');
     expect(grid.readOnlyEdit).toBe(true);
+  });
+
+  it('synchronizes accessible metadata through the AG Grid render API', () => {
+    const setGridAriaProperty = vi.fn();
+    const fixture = TestBed.createComponent(FundingGridComponent);
+
+    fixture.componentRef.setInput(
+      'viewModel',
+      toFundingGridViewModel(createSecCorpReportFixture(), {}, null),
+    );
+    fixture.detectChanges();
+    fixture.componentInstance.onGridReady({
+      api: {
+        setGridAriaProperty,
+      },
+    } as unknown as GridReadyEvent<FundingGridRowViewModel>);
+    TestBed.flushEffects();
+
+    expect(setGridAriaProperty).toHaveBeenCalledWith(
+      'label',
+      'Sec Corp funding report for 2026-07-25',
+    );
+    expect(setGridAriaProperty).toHaveBeenCalledWith(
+      'describedby',
+      fixture.componentInstance.descriptionId,
+    );
   });
 
   it('enables only input rows in snapshot columns', () => {

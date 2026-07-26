@@ -212,6 +212,10 @@ export class FundingPanelStore {
   }
 
   requestRefresh(): boolean {
+    if (this.loadStatusState() === 'loading') {
+      return false;
+    }
+
     if (this.activeEditState() !== null && !this.commitEdit()) {
       return false;
     }

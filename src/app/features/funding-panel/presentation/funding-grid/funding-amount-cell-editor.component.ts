@@ -23,6 +23,8 @@ type FundingAmountEditorParams = ICellEditorParams<
   FundingGridCellViewModel
 >;
 
+let fundingEditorInstanceSequence = 0;
+
 @Component({
   selector: 'app-funding-amount-cell-editor',
   standalone: true,
@@ -41,6 +43,8 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
   readonly rawValue = signal('');
   readonly validation = signal<FundingCellValidation>(validateFundingCellInput('0.00'));
   readonly editorWidth = signal(128);
+  readonly inputLabel = signal('Funding amount');
+  readonly errorId = `funding-editor-error-${++fundingEditorInstanceSequence}`;
 
   agInit(params: FundingAmountEditorParams): void {
     const periodId = params.column.getColId();
@@ -54,6 +58,7 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
     this.params = params;
     this.initialCell = params.value;
     this.rawValue.set(rawValue);
+    this.inputLabel.set(`${params.data.label} ${snapshotPeriodLabel(periodId)} funding amount`);
     this.editorWidth.set(Math.max(params.eGridCell.getBoundingClientRect().width, 128));
     this.validation.set(this.store.beginEdit(params.data.id, periodId, rawValue));
   }
@@ -126,6 +131,19 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
       this.store.cancelEdit();
       this.params?.api.stopEditing(true);
     }
+  }
+}
+
+function snapshotPeriodLabel(periodId: string): string {
+  switch (periodId) {
+    case 'snapshot0830':
+      return '8:30';
+    case 'snapshot1130':
+      return '11:30';
+    case 'snapshot1330':
+      return '1:30';
+    default:
+      throw new FundingPanelStateError(`Unknown snapshot period ${periodId}.`);
   }
 }
 

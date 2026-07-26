@@ -162,6 +162,72 @@ describe('FundingPanelStore', () => {
       ]);
     });
   });
+
+  it('rejects duplicate refresh requests while a load is already in progress', async () => {
+    await waitForReady(store);
+
+    host.requestRefresh();
+    await vi.waitFor(() => {
+      expect(gateway.getCalls).toHaveLength(2);
+    });
+
+    expect(store.requestRefresh()).toBe(false);
+    expect(store.hostState().canRefresh).toBe(false);
+    expect(gateway.getCalls).toHaveLength(2);
+
+    gateway.resolveGet(createSecCorpReportFixture());
+    await waitForReady(store);
+  });
+
+  it('allows a failed manual load to be retried without losing the active query', async () => {
+    await waitForReady(store);
+
+    host.requestRefresh();
+    await vi.waitFor(() => {
+      expect(gateway.getCalls).toHaveLength(2);
+    });
+    gateway.rejectGet(new Error('Funding service is unavailable.'));
+
+    await vi.waitFor(() => {
+      expect(store.loadStatus()).toBe('error');
+    });
+
+    expect(store.errorMessage()).toBe('Funding service is unavailable.');
+    expect(store.hostState().canRefresh).toBe(true);
+    expect(store.requestRefresh()).toBe(true);
+    expect(gateway.getCalls[2]).toEqual({
+      panelCode: 'sec-corp',
+      businessDate: '2026-07-25',
+    });
+
+    gateway.resolveGet(createSecCorpReportFixture());
+    await waitForReady(store);
+  });
+
+  it('retains dirty work after a transient save failure and retries the same version', async () => {
+    await waitForReady(store);
+
+    store.beginEdit('occ', 'snapshot0830', '-300000000');
+    store.commitEdit();
+    gateway.rejectPut(new Error('Funding service is unavailable.'));
+
+    await vi.waitFor(() => {
+      expect(store.saveStatus()).toBe('error');
+    });
+
+    expect(store.isDirty()).toBe(true);
+    expect(store.errorMessage()).toBe('Funding service is unavailable.');
+    expect(store.requestRefresh()).toBe(false);
+    expect(store.retrySave()).toBe(true);
+    expect(gateway.putCommands).toHaveLength(2);
+    expect(gateway.putCommands[1]?.expectedVersion).toBe(17);
+
+    gateway.resolvePut(savedReport(gateway.putCommands[1], 18));
+    await vi.waitFor(() => {
+      expect(store.isDirty()).toBe(false);
+      expect(store.saveStatus()).toBe('saved');
+    });
+  });
 });
 
 class ControllableFundingPanelGateway implements FundingPanelGateway {
@@ -186,6 +252,12 @@ class ControllableFundingPanelGateway implements FundingPanelGateway {
 
   resolveGet(report: FundingReport): void {
     requireSubject(this.getResponses, 'GET').next(report);
+    this.getResponses.shift();
+  }
+
+  rejectGet(error: Error): void {
+    requireSubject(this.getResponses, 'GET').error(error);
+    this.getResponses.shift();
   }
 
   resolvePut(report: FundingReport): void {

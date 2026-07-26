@@ -65,9 +65,11 @@ describe('FundingAmountCellEditorComponent', () => {
     fixture.detectChanges();
 
     expect(input.getAttribute('aria-invalid')).toBe('true');
-    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
-      'no more than two decimal places',
-    );
+    expect(input.getAttribute('aria-label')).toBe('OCC 8:30 funding amount');
+    const error = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
+
+    expect(input.getAttribute('aria-describedby')).toBe(error.id);
+    expect(error.textContent).toContain('no more than two decimal places');
     expect(fixture.componentInstance.getValidationErrors()).toEqual([
       'Use a number with no more than two decimal places.',
     ]);

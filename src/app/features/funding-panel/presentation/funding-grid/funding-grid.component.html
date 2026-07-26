@@ -1,5 +1,9 @@
+<p class="funding-grid__visually-hidden" [id]="descriptionId">
+  {{ ariaDescription() }}
+</p>
 <ag-grid-angular
-  aria-label="Funding report"
+  [attr.aria-describedby]="descriptionId"
+  [attr.aria-label]="ariaLabel()"
   class="funding-grid"
   data-testid="funding-grid"
   [animateRows]="false"
@@ -22,4 +26,5 @@
   [suppressMovableColumns]="true"
   [theme]="theme"
   (cellEditingStopped)="onCellEditingStopped()"
+  (gridReady)="onGridReady($event)"
 ></ag-grid-angular>

@@ -89,7 +89,7 @@ describe('HttpFundingPanelGateway', () => {
     });
   });
 
-  it('maps stale server responses to a version conflict', async () => {
+  it.each([409, 412])('maps HTTP %s stale responses to a version conflict', async (status) => {
     const report = createSecCorpReportFixture();
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
@@ -112,8 +112,8 @@ describe('HttpFundingPanelGateway', () => {
         currentVersion: 18,
       },
       {
-        status: 409,
-        statusText: 'Conflict',
+        status,
+        statusText: status === 409 ? 'Conflict' : 'Precondition Failed',
       },
     );
 
