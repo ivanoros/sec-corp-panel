@@ -1,5 +1,7 @@
 <main
   aria-label="Sec Corp funding panel"
+  [attr.aria-busy]="store.loadStatus() === 'loading'"
   class="sec-corp-panel"
+  [attr.data-load-status]="store.loadStatus()"
   data-testid="sec-corp-panel"
 ></main>
