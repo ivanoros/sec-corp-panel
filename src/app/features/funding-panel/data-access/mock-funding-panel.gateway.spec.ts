@@ -1,13 +1,16 @@
+import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { asDecimalString } from '../domain/decimal-value';
 import { selectSnapshotValues, type SaveFundingReportCommand } from '../domain/funding-report';
 import type { FundingPanelVersionConflictError } from './funding-panel.gateway';
+import { provideFundingPanelMockReport } from './funding-panel-mock-report';
 import { MockFundingPanelGateway } from './mock-funding-panel.gateway';
+import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
 
 describe('MockFundingPanelGateway', () => {
   it('retrieves the versioned Sec Corp report', async () => {
-    const gateway = new MockFundingPanelGateway();
+    const gateway = createGateway();
 
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
 
@@ -16,7 +19,7 @@ describe('MockFundingPanelGateway', () => {
   });
 
   it('replaces snapshot state, recalculates totals, and advances the version', async () => {
-    const gateway = new MockFundingPanelGateway();
+    const gateway = createGateway();
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
     const snapshotValues = selectSnapshotValues(report);
     const occSnapshotValues = snapshotValues['occ'];
@@ -52,7 +55,7 @@ describe('MockFundingPanelGateway', () => {
   });
 
   it('rejects a stale save without changing server state', async () => {
-    const gateway = new MockFundingPanelGateway();
+    const gateway = createGateway();
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
@@ -71,3 +74,11 @@ describe('MockFundingPanelGateway', () => {
     );
   });
 });
+
+function createGateway(): MockFundingPanelGateway {
+  TestBed.configureTestingModule({
+    providers: [MockFundingPanelGateway, provideFundingPanelMockReport(createSecCorpReportFixture)],
+  });
+
+  return TestBed.inject(MockFundingPanelGateway);
+}

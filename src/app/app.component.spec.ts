@@ -42,4 +42,16 @@ describe('AppComponent', () => {
 
     expect(compiled.querySelector('[data-testid="sec-corp-panel"]')).not.toBeNull();
   });
+
+  it('should mount the PBIL panel route', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/pbil');
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('[data-testid="pbil-panel"]')).not.toBeNull();
+  });
 });

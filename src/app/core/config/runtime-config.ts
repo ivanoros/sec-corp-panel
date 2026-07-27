@@ -11,6 +11,7 @@ export interface RuntimeConfig {
 
 declare global {
   interface Window {
+    __FUNDING_PANEL_CONFIG__?: unknown;
     __SEC_CORP_PANEL_CONFIG__?: unknown;
   }
 }
@@ -25,7 +26,7 @@ const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = Object.freeze({
 export const APP_RUNTIME_CONFIG = new InjectionToken<RuntimeConfig>('APP_RUNTIME_CONFIG');
 
 export function readRuntimeConfig(
-  candidate: unknown = window.__SEC_CORP_PANEL_CONFIG__,
+  candidate: unknown = window.__FUNDING_PANEL_CONFIG__ ?? window.__SEC_CORP_PANEL_CONFIG__,
 ): RuntimeConfig {
   if (!isRecord(candidate)) {
     return DEFAULT_RUNTIME_CONFIG;

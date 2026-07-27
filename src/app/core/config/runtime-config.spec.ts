@@ -1,6 +1,11 @@
 import { APP_RUNTIME_CONFIG, readRuntimeConfig } from './runtime-config';
 
 describe('readRuntimeConfig', () => {
+  afterEach(() => {
+    delete window.__FUNDING_PANEL_CONFIG__;
+    delete window.__SEC_CORP_PANEL_CONFIG__;
+  });
+
   it('uses safe defaults for an absent configuration', () => {
     expect(readRuntimeConfig(undefined)).toEqual({
       agGridEnterpriseLicenseKey: null,
@@ -38,6 +43,28 @@ describe('readRuntimeConfig', () => {
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'mock',
     });
+  });
+
+  it('prefers the generic funding configuration while retaining the legacy alias', () => {
+    window.__SEC_CORP_PANEL_CONFIG__ = {
+      apiBaseUrl: '/legacy-api',
+    };
+    window.__FUNDING_PANEL_CONFIG__ = {
+      apiBaseUrl: '/funding-api',
+      businessDate: '2026-07-28',
+      fundingPanelDataSource: 'http',
+    };
+
+    expect(readRuntimeConfig()).toEqual({
+      agGridEnterpriseLicenseKey: null,
+      apiBaseUrl: '/funding-api',
+      businessDate: '2026-07-28',
+      fundingPanelDataSource: 'http',
+    });
+
+    delete window.__FUNDING_PANEL_CONFIG__;
+
+    expect(readRuntimeConfig().apiBaseUrl).toBe('/legacy-api');
   });
 
   it('exports a stable injection token', () => {

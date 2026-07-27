@@ -9,6 +9,8 @@ import {
 } from './funding-panel-data.providers';
 import { HttpFundingPanelGateway } from './http-funding-panel.gateway';
 import { MockFundingPanelGateway } from './mock-funding-panel.gateway';
+import { provideFundingPanelMockReport } from './funding-panel-mock-report';
+import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
 
 describe('funding panel data providers', () => {
   it('selects the self-contained mock gateway when configured', () => {
@@ -46,6 +48,7 @@ function configureDataAccess(
     providers: [
       provideHttpClient(),
       ...FUNDING_PANEL_DATA_ACCESS_PROVIDERS,
+      provideFundingPanelMockReport(createSecCorpReportFixture),
       {
         provide: APP_RUNTIME_CONFIG,
         useValue: runtimeConfig,

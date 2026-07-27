@@ -14,6 +14,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pbil',
+    loadComponent: () =>
+      import('./features/funding-panel/panels/pbil/pbil-panel.component').then(
+        ({ PbilPanelComponent }) => PbilPanelComponent,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'sec-corp',
   },

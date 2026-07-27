@@ -1,18 +1,18 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { defer, of, type Observable } from 'rxjs';
 
 import type { FundingReport, FundingRow, SaveFundingReportCommand } from '../domain/funding-report';
 import { recalculateFundingReport } from '../domain/report-calculator';
 import { assertValidFundingReport, FundingPanelContractError } from '../domain/report-validator';
-import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
 import {
   type FundingPanelGateway,
   FundingPanelVersionConflictError,
 } from './funding-panel.gateway';
+import { FUNDING_PANEL_MOCK_REPORT } from './funding-panel-mock-report';
 
 @Injectable()
 export class MockFundingPanelGateway implements FundingPanelGateway {
-  private currentReport = createSecCorpReportFixture();
+  private currentReport = structuredClone(inject(FUNDING_PANEL_MOCK_REPORT));
 
   getReport(panelCode: string, businessDate: string): Observable<FundingReport> {
     return defer(() => {
