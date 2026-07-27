@@ -75,8 +75,10 @@ totals, and return the complete report. A stale write must return HTTP 409 or 41
 - **Loading failure:** the panel shows the service error and `Try again`.
 - **Save failure:** edited values stay dirty; `Retry` repeats the full-state PUT
   using the same expected version.
-- **Version conflict:** edits remain local. `Discard my edits and reload`
-  requires a second confirmation. There is intentionally no client-side merge.
+- **Version conflict:** the panel explicitly says the screen is out of date and
+  the attempted changes were not saved. The unsaved values remain visible
+  locally for review. `Reload latest data` requires confirmation because it
+  discards those local values. There is intentionally no client-side merge.
 - **Invalid edit:** the cell remains active with an inline validation message;
   save and manual refresh remain blocked.
 - **Manual refresh during save:** refresh is queued and starts after the valid

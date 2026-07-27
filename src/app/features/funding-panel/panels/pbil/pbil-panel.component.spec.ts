@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
 
 import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
+import { FUNDING_PANEL_GATEWAY } from '../../data-access/funding-panel.gateway';
+import { selectSnapshotValues, type SaveFundingReportCommand } from '../../domain/funding-report';
 import { FundingGridComponent } from '../../presentation/funding-grid/funding-grid.component';
 import { PbilPanelComponent } from './pbil-panel.component';
 
@@ -79,5 +82,55 @@ describe('PbilPanelComponent', () => {
       expect(store.report()?.version).toBe(8);
       expect(store.isDirty()).toBe(false);
     });
+  });
+
+  it('rejects an outdated save and tells the user to reload because changes were not saved', async () => {
+    const fixture = TestBed.createComponent(PbilPanelComponent);
+    const store = fixture.componentInstance.store;
+    const gateway = fixture.debugElement.injector.get(FUNDING_PANEL_GATEWAY);
+
+    fixture.detectChanges();
+    await vi.waitFor(() => {
+      expect(store.loadStatus()).toBe('ready');
+    });
+
+    const screenReport = store.report();
+
+    if (screenReport === null) {
+      throw new Error('Expected the PBIL report to be loaded.');
+    }
+
+    const externalUpdate: SaveFundingReportCommand = {
+      schemaVersion: 1,
+      reportId: screenReport.reportId,
+      panelCode: screenReport.panelCode,
+      businessDate: screenReport.businessDate,
+      expectedVersion: screenReport.version,
+      snapshotValues: selectSnapshotValues(screenReport),
+    };
+    const externallySavedReport = await firstValueFrom(gateway.putReport(externalUpdate));
+
+    expect(externallySavedReport.version).toBe(8);
+    expect(store.report()?.version).toBe(7);
+
+    store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
+    expect(store.commitEdit()).toBe(true);
+
+    await vi.waitFor(() => {
+      expect(store.saveStatus()).toBe('conflict');
+    });
+    fixture.detectChanges();
+
+    const conflictAlert = fixture.nativeElement.querySelector(
+      '[data-testid="version-conflict"]',
+    ) as HTMLElement | null;
+    const conflictText = conflictAlert?.textContent?.replace(/\s+/g, ' ').trim();
+
+    expect(store.conflict()).toEqual({ expectedVersion: 7, currentVersion: 8 });
+    expect(store.isDirty()).toBe(true);
+    expect(conflictText).toContain('This screen is out of date');
+    expect(conflictText).toContain('your changes were not saved');
+    expect(conflictText).toContain('Screen version 7; latest version 8');
+    expect(conflictText).toContain('Reload latest data');
   });
 });

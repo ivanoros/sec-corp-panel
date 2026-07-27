@@ -57,13 +57,26 @@ describe('MockFundingPanelGateway', () => {
   it('rejects a stale save without changing server state', async () => {
     const gateway = createGateway();
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
+    const snapshotValues = selectSnapshotValues(report);
+    const occSnapshotValues = snapshotValues['occ'];
+
+    if (occSnapshotValues === undefined) {
+      throw new Error('Missing OCC snapshot values.');
+    }
+
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
       reportId: report.reportId,
       panelCode: report.panelCode,
       businessDate: report.businessDate,
       expectedVersion: 16,
-      snapshotValues: selectSnapshotValues(report),
+      snapshotValues: {
+        ...snapshotValues,
+        occ: {
+          ...occSnapshotValues,
+          snapshot0830: asDecimalString('-1.00'),
+        },
+      },
     };
 
     await expect(firstValueFrom(gateway.putReport(command))).rejects.toEqual(
@@ -71,6 +84,13 @@ describe('MockFundingPanelGateway', () => {
         expectedVersion: 16,
         currentVersion: 17,
       }),
+    );
+
+    const unchangedReport = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
+
+    expect(unchangedReport.version).toBe(17);
+    expect(unchangedReport.rows.find(({ id }) => id === 'occ')?.values.snapshot0830).toBe(
+      '-308824714.48',
     );
   });
 });

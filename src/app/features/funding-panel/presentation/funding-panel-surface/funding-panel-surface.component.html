@@ -36,24 +36,35 @@
     } @else if (store.saveStatus() === 'conflict') {
       <div
         class="funding-panel-surface__save-state funding-panel-surface__save-state--conflict"
+        data-testid="version-conflict"
         role="alert"
       >
-        <span>Another user updated this report. Your edits are preserved.</span>
+        @if (store.conflict(); as conflict) {
+          <span>
+            Another user updated this report. This screen is out of date, and your changes were not
+            saved.
+            @if (conflict.currentVersion !== null) {
+              Screen version {{ conflict.expectedVersion }}; latest version
+              {{ conflict.currentVersion }}.
+            }
+            Reload the latest data before editing again.
+          </span>
+        }
         @if (confirmingConflictDiscard()) {
-          <span>This cannot be undone.</span>
+          <span>Reloading will discard the unsaved values shown on this screen.</span>
           <button
             class="funding-panel-surface__save-action"
             type="button"
             (click)="cancelConflictDiscard()"
           >
-            Keep edits
+            Keep this screen
           </button>
           <button
             class="funding-panel-surface__save-action funding-panel-surface__save-action--destructive"
             type="button"
             (click)="confirmConflictDiscard()"
           >
-            Confirm discard
+            Confirm reload
           </button>
         } @else {
           <button
@@ -61,7 +72,7 @@
             type="button"
             (click)="requestConflictDiscard()"
           >
-            Discard my edits and reload
+            Reload latest data
           </button>
         }
       </div>
