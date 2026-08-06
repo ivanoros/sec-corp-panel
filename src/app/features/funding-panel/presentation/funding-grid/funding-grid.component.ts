@@ -4,7 +4,6 @@ import {
   ViewEncapsulation,
   computed,
   effect,
-  inject,
   input,
   signal,
 } from '@angular/core';
@@ -21,7 +20,6 @@ import type {
   ValueGetterParams,
 } from 'ag-grid-community';
 
-import { FundingPanelStore } from '../../application/funding-panel.store';
 import type { ReportPeriod } from '../../domain/funding-report';
 import {
   type FundingGridCellViewModel,
@@ -53,7 +51,6 @@ let fundingGridInstanceSequence = 0;
   encapsulation: ViewEncapsulation.None,
 })
 export class FundingGridComponent {
-  private readonly store = inject(FundingPanelStore);
   private readonly gridApi = signal<GridApi<FundingGridRowViewModel> | null>(null);
 
   readonly viewModel = input.required<FundingGridViewModel>();
@@ -75,7 +72,7 @@ export class FundingGridComponent {
       `Currency ${viewModel.currency}.`,
       `Data as of ${viewModel.asOf} in ${viewModel.timezone}.`,
       `Columns are Bucket, ${periodLabels}.`,
-      'Snapshot cells may be edited when permitted; LIVE and Opps funding are read-only.',
+      '8:30, 11:30, 1:30, and Opps funding input cells may be edited; Bucket and LIVE are read-only.',
     ].join(' ');
   });
   readonly defaultColDef: FundingColumnDef = {
@@ -107,10 +104,6 @@ export class FundingGridComponent {
 
   onGridReady(event: GridReadyEvent<FundingGridRowViewModel>): void {
     this.gridApi.set(event.api);
-  }
-
-  onCellEditingStopped(): void {
-    this.store.commitEdit();
   }
 }
 
@@ -156,7 +149,7 @@ function createPeriodColumn(period: ReportPeriod): FundingColumnDef {
         ? getFundingValueCellClasses(value)
         : [FUNDING_GRID_CELL_CLASSES.numeric],
     headerClass: 'funding-grid__header--numeric',
-    ...(period.kind === 'snapshot'
+    ...(period.editable
       ? {
           cellEditor: FundingAmountCellEditorComponent,
         }
@@ -168,7 +161,7 @@ export function isFundingGridCellEditable(
   row: FundingGridRowViewModel,
   period: ReportPeriod,
 ): boolean {
-  return period.kind === 'snapshot' && row.cells[period.id].editable;
+  return period.editable && row.cells[period.id].editable;
 }
 
 function isFundingCell(value: FundingColumnValue | undefined): value is FundingGridCellViewModel {

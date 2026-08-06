@@ -9,10 +9,9 @@ import {
 } from '../data-access/funding-panel.gateway';
 import type { DecimalString } from '../domain/decimal-value';
 import {
-  selectSnapshotValues,
+  type EditablePeriodId,
   type FundingReport,
   type SaveFundingReportCommand,
-  type SnapshotPeriodId,
 } from '../domain/funding-report';
 import { recalculateFundingReport } from '../domain/report-calculator';
 import {
@@ -35,10 +34,15 @@ export interface FundingVersionConflict {
 }
 
 interface ActiveEdit {
-  readonly periodId: SnapshotPeriodId;
+  readonly periodId: EditablePeriodId;
   readonly rawValue: string;
   readonly rowId: string;
   readonly validation: FundingCellValidation;
+}
+
+export interface FundingEditableCellAddress {
+  readonly periodId: EditablePeriodId;
+  readonly rowId: string;
 }
 
 const EMPTY_EDITS: DirtyFundingCells = Object.freeze({});
@@ -57,9 +61,8 @@ export class FundingPanelStore {
   private readonly saveStatusState = signal<PanelHostState['saveStatus']>('idle');
   private readonly errorMessageState = signal<string | null>(null);
   private readonly conflictState = signal<FundingVersionConflict | null>(null);
-  private readonly refreshPendingState = signal(false);
 
-  private saveLoopActive = false;
+  private updateRequestActive = false;
   private loadRequestRevision = 0;
   private destroyed = false;
   private lastHostRefreshRevision = this.host.refreshRevision();
@@ -76,6 +79,22 @@ export class FundingPanelStore {
       isActiveEditDirty(this.activeEditState(), this.editsState(), this.serverReportState()),
   );
   readonly hasInvalidEdit = computed(() => this.activeEditState()?.validation.isValid === false);
+  readonly canUpdate = computed(
+    () =>
+      this.loadStatusState() === 'ready' &&
+      this.isDirty() &&
+      !this.hasInvalidEdit() &&
+      this.saveStatusState() !== 'saving' &&
+      this.saveStatusState() !== 'conflict',
+  );
+  readonly canRequestRefresh = computed(
+    () =>
+      this.queryState() !== null &&
+      this.loadStatusState() !== 'loading' &&
+      !this.hasInvalidEdit() &&
+      this.saveStatusState() !== 'saving' &&
+      this.saveStatusState() !== 'conflict',
+  );
   readonly report = computed(() => {
     const serverReport = this.serverReportState();
 
@@ -98,8 +117,11 @@ export class FundingPanelStore {
   });
   readonly hostState = computed<PanelHostState>(() => ({
     canRefresh:
+      this.queryState() !== null &&
       this.loadStatusState() !== 'loading' &&
+      !this.isDirty() &&
       !this.hasInvalidEdit() &&
+      this.saveStatusState() !== 'saving' &&
       this.saveStatusState() !== 'error' &&
       this.saveStatusState() !== 'conflict',
     isDirty: this.isDirty(),
@@ -130,7 +152,7 @@ export class FundingPanelStore {
   }
 
   load(query: FundingReportQuery): void {
-    if (this.hasCommittedEdits() || this.activeEditState() !== null || this.saveLoopActive) {
+    if (this.hasCommittedEdits() || this.activeEditState() !== null || this.updateRequestActive) {
       throw new FundingPanelStateError('Cannot replace a report while it has pending edits.');
     }
 
@@ -138,7 +160,7 @@ export class FundingPanelStore {
     this.startLoad(query);
   }
 
-  beginEdit(rowId: string, periodId: SnapshotPeriodId, rawValue: string): FundingCellValidation {
+  beginEdit(rowId: string, periodId: EditablePeriodId, rawValue: string): FundingCellValidation {
     const report = this.serverReportState();
     const row = report?.rows.find(({ id }) => id === rowId);
     const period = report?.periods.find(({ id }) => id === periodId);
@@ -166,10 +188,17 @@ export class FundingPanelStore {
     return this.updateActiveEdit(activeEdit.rowId, activeEdit.periodId, rawValue);
   }
 
-  commitEdit(): boolean {
+  commitEdit(expectedCell?: FundingEditableCellAddress): boolean {
     const activeEdit = this.activeEditState();
 
     if (activeEdit === null) {
+      return true;
+    }
+
+    if (
+      expectedCell !== undefined &&
+      (activeEdit.rowId !== expectedCell.rowId || activeEdit.periodId !== expectedCell.periodId)
+    ) {
       return true;
     }
 
@@ -182,7 +211,7 @@ export class FundingPanelStore {
       activeEdit.rowId,
       activeEdit.periodId,
     );
-    const mustPreserveExplicitIntent = this.saveLoopActive;
+    const mustPreserveExplicitIntent = this.updateRequestActive;
     const nextEdits =
       !mustPreserveExplicitIntent && serverValue === activeEdit.validation.value
         ? removeEdit(this.editsState(), activeEdit.rowId, activeEdit.periodId)
@@ -197,11 +226,8 @@ export class FundingPanelStore {
     this.activeEditState.set(null);
     this.errorMessageState.set(null);
 
-    if (hasEdits(nextEdits)) {
-      this.queueSave();
-    } else {
+    if (!hasEdits(nextEdits)) {
       this.saveStatusState.set('idle');
-      this.completePendingRefresh();
     }
 
     return true;
@@ -212,7 +238,7 @@ export class FundingPanelStore {
   }
 
   requestRefresh(): boolean {
-    if (this.loadStatusState() === 'loading') {
+    if (!this.canRequestRefresh()) {
       return false;
     }
 
@@ -220,14 +246,8 @@ export class FundingPanelStore {
       return false;
     }
 
-    if (this.saveStatusState() === 'error' || this.saveStatusState() === 'conflict') {
+    if (this.hasCommittedEdits()) {
       return false;
-    }
-
-    if (this.hasCommittedEdits() || this.saveLoopActive) {
-      this.refreshPendingState.set(true);
-      this.queueSave();
-      return true;
     }
 
     const query = this.queryState();
@@ -240,20 +260,41 @@ export class FundingPanelStore {
     return true;
   }
 
+  updateReport(): boolean {
+    if (this.activeEditState() !== null && !this.commitEdit()) {
+      return false;
+    }
+
+    if (!this.canUpdate() || this.updateRequestActive) {
+      return false;
+    }
+
+    const report = this.report();
+
+    if (report === null) {
+      return false;
+    }
+
+    this.updateRequestActive = true;
+    this.saveStatusState.set('saving');
+    this.errorMessageState.set(null);
+    void this.performUpdate(report);
+    return true;
+  }
+
   retrySave(): boolean {
     if (this.saveStatusState() !== 'error' || !this.hasCommittedEdits()) {
       return false;
     }
 
     this.errorMessageState.set(null);
-    this.queueSave();
-    return true;
+    return this.updateReport();
   }
 
   discardChangesAndRefresh(): boolean {
     const query = this.queryState();
 
-    if (query === null || this.saveLoopActive) {
+    if (query === null || this.updateRequestActive) {
       return false;
     }
 
@@ -262,14 +303,13 @@ export class FundingPanelStore {
     this.conflictState.set(null);
     this.errorMessageState.set(null);
     this.saveStatusState.set('idle');
-    this.refreshPendingState.set(false);
     this.startLoad(query);
     return true;
   }
 
   private updateActiveEdit(
     rowId: string,
-    periodId: SnapshotPeriodId,
+    periodId: EditablePeriodId,
     rawValue: string,
   ): FundingCellValidation {
     const validation = validateFundingCellInput(rawValue);
@@ -321,81 +361,38 @@ export class FundingPanelStore {
     }
   }
 
-  private queueSave(): void {
-    if (this.saveLoopActive || !this.hasCommittedEdits()) {
-      return;
-    }
-
-    this.saveLoopActive = true;
-    void this.drainSaveQueue();
-  }
-
-  private async drainSaveQueue(): Promise<void> {
+  private async performUpdate(report: FundingReport): Promise<void> {
     try {
-      while (!this.destroyed && this.hasCommittedEdits() && this.saveStatusState() !== 'conflict') {
-        const report = this.report();
+      const savedReport = await firstValueFrom(
+        this.gateway.putReport(toSaveCommand(report)).pipe(takeUntilDestroyed(this.destroyRef)),
+      );
 
-        if (report === null) {
-          throw new FundingPanelStateError('Cannot save before a report is loaded.');
-        }
+      if (this.destroyed) {
+        return;
+      }
 
-        this.saveStatusState.set('saving');
-        this.errorMessageState.set(null);
+      this.serverReportState.set(savedReport);
+      this.editsState.update((edits) => rebaseEdits(edits, savedReport));
+      this.conflictState.set(null);
+      this.saveStatusState.set(this.hasCommittedEdits() ? 'idle' : 'saved');
+    } catch (error: unknown) {
+      if (this.destroyed) {
+        return;
+      }
 
-        try {
-          const savedReport = await firstValueFrom(
-            this.gateway.putReport(toSaveCommand(report)).pipe(takeUntilDestroyed(this.destroyRef)),
-          );
-
-          if (this.destroyed) {
-            return;
-          }
-
-          this.serverReportState.set(savedReport);
-          this.editsState.update((edits) => rebaseEdits(edits, savedReport));
-          this.conflictState.set(null);
-          this.saveStatusState.set(this.hasCommittedEdits() ? 'saving' : 'saved');
-        } catch (error: unknown) {
-          if (this.destroyed) {
-            return;
-          }
-
-          if (error instanceof FundingPanelVersionConflictError) {
-            this.conflictState.set({
-              currentVersion: error.currentVersion,
-              expectedVersion: error.expectedVersion,
-            });
-            this.saveStatusState.set('conflict');
-            this.errorMessageState.set(error.message);
-          } else {
-            this.saveStatusState.set('error');
-            this.errorMessageState.set(toErrorMessage(error, 'Unable to save the funding report.'));
-          }
-
-          return;
-        }
+      if (error instanceof FundingPanelVersionConflictError) {
+        this.conflictState.set({
+          currentVersion: error.currentVersion,
+          expectedVersion: error.expectedVersion,
+        });
+        this.saveStatusState.set('conflict');
+        this.errorMessageState.set(error.message);
+      } else {
+        this.saveStatusState.set('error');
+        this.errorMessageState.set(toErrorMessage(error, 'Unable to save the funding report.'));
       }
     } finally {
-      this.saveLoopActive = false;
-      this.completePendingRefresh();
-    }
-  }
-
-  private completePendingRefresh(): void {
-    if (
-      !this.refreshPendingState() ||
-      this.hasCommittedEdits() ||
-      this.saveStatusState() === 'error' ||
-      this.saveStatusState() === 'conflict'
-    ) {
-      return;
-    }
-
-    const query = this.queryState();
-
-    if (query !== null) {
-      this.refreshPendingState.set(false);
-      this.startLoad(query);
+      this.updateRequestActive = false;
     }
   }
 }
@@ -436,11 +433,8 @@ function buildPreviewReport(
 function toSaveCommand(report: FundingReport): SaveFundingReportCommand {
   return {
     schemaVersion: 1,
-    reportId: report.reportId,
-    panelCode: report.panelCode,
-    businessDate: report.businessDate,
     expectedVersion: report.version,
-    snapshotValues: selectSnapshotValues(report),
+    report,
   };
 }
 
@@ -457,7 +451,7 @@ function toActiveFundingCell(activeEdit: ActiveEdit | null): ActiveFundingCell |
 function setEdit(
   edits: DirtyFundingCells,
   rowId: string,
-  periodId: SnapshotPeriodId,
+  periodId: EditablePeriodId,
   value: DecimalString,
 ): DirtyFundingCells {
   return {
@@ -472,7 +466,7 @@ function setEdit(
 function removeEdit(
   edits: DirtyFundingCells,
   rowId: string,
-  periodId: SnapshotPeriodId,
+  periodId: EditablePeriodId,
 ): DirtyFundingCells {
   const rowEdits = edits[rowId];
 
@@ -497,12 +491,12 @@ function removeEdit(
 function rebaseEdits(edits: DirtyFundingCells, savedReport: FundingReport): DirtyFundingCells {
   return Object.entries(edits).reduce<DirtyFundingCells>((rebasedEdits, [rowId, rowEdits]) => {
     return Object.entries(rowEdits).reduce<DirtyFundingCells>((currentEdits, [periodId, value]) => {
-      const snapshotPeriodId = periodId as SnapshotPeriodId;
-      const savedValue = findCellValue(savedReport, rowId, snapshotPeriodId);
+      const editablePeriodId = periodId as EditablePeriodId;
+      const savedValue = findCellValue(savedReport, rowId, editablePeriodId);
 
       return value === savedValue
         ? currentEdits
-        : setEdit(currentEdits, rowId, snapshotPeriodId, value);
+        : setEdit(currentEdits, rowId, editablePeriodId, value);
     }, rebasedEdits);
   }, EMPTY_EDITS);
 }
@@ -510,7 +504,7 @@ function rebaseEdits(edits: DirtyFundingCells, savedReport: FundingReport): Dirt
 function findCellValue(
   report: FundingReport | null,
   rowId: string,
-  periodId: SnapshotPeriodId,
+  periodId: EditablePeriodId,
 ): DecimalString | null {
   const value = report?.rows.find(({ id }) => id === rowId)?.values[periodId];
   return value ?? null;

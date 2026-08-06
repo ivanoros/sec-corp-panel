@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { asDecimalString } from '../domain/decimal-value';
-import { selectSnapshotValues, type SaveFundingReportCommand } from '../domain/funding-report';
+import type { FundingReport, SaveFundingReportCommand } from '../domain/funding-report';
+import { recalculateFundingReport } from '../domain/report-calculator';
 import type { FundingPanelVersionConflictError } from './funding-panel.gateway';
 import { provideFundingPanelMockReport } from './funding-panel-mock-report';
 import { MockFundingPanelGateway } from './mock-funding-panel.gateway';
@@ -18,29 +19,15 @@ describe('MockFundingPanelGateway', () => {
     expect(report.rows).toHaveLength(37);
   });
 
-  it('replaces snapshot state, recalculates totals, and advances the version', async () => {
+  it('replaces the complete report dataset, recalculates totals, and advances the version', async () => {
     const gateway = createGateway();
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
-    const snapshotValues = selectSnapshotValues(report);
-    const occSnapshotValues = snapshotValues['occ'];
-
-    if (occSnapshotValues === undefined) {
-      throw new Error('Missing OCC snapshot values.');
-    }
+    const updatedReport = replaceSnapshotValue(report, 'occ', '-300000000.00');
 
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
-      reportId: report.reportId,
-      panelCode: report.panelCode,
-      businessDate: report.businessDate,
       expectedVersion: report.version,
-      snapshotValues: {
-        ...snapshotValues,
-        occ: {
-          ...occSnapshotValues,
-          snapshot0830: asDecimalString('-300000000.00'),
-        },
-      },
+      report: updatedReport,
     };
 
     const savedReport = await firstValueFrom(gateway.putReport(command));
@@ -57,26 +44,12 @@ describe('MockFundingPanelGateway', () => {
   it('rejects a stale save without changing server state', async () => {
     const gateway = createGateway();
     const report = await firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
-    const snapshotValues = selectSnapshotValues(report);
-    const occSnapshotValues = snapshotValues['occ'];
-
-    if (occSnapshotValues === undefined) {
-      throw new Error('Missing OCC snapshot values.');
-    }
+    const updatedReport = replaceSnapshotValue(report, 'occ', '-1.00');
 
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
-      reportId: report.reportId,
-      panelCode: report.panelCode,
-      businessDate: report.businessDate,
       expectedVersion: 16,
-      snapshotValues: {
-        ...snapshotValues,
-        occ: {
-          ...occSnapshotValues,
-          snapshot0830: asDecimalString('-1.00'),
-        },
-      },
+      report: updatedReport,
     };
 
     await expect(firstValueFrom(gateway.putReport(command))).rejects.toEqual(
@@ -101,4 +74,21 @@ function createGateway(): MockFundingPanelGateway {
   });
 
   return TestBed.inject(MockFundingPanelGateway);
+}
+
+function replaceSnapshotValue(report: FundingReport, rowId: string, value: string): FundingReport {
+  return recalculateFundingReport({
+    ...report,
+    rows: report.rows.map((row) =>
+      row.id === rowId
+        ? {
+            ...row,
+            values: {
+              ...row.values,
+              snapshot0830: asDecimalString(value),
+            },
+          }
+        : row,
+    ),
+  });
 }

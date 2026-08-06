@@ -23,7 +23,11 @@ Every report contains exactly these periods in this order:
 2. `snapshot1130`, displayed as `11:30`, editable.
 3. `snapshot1330`, displayed as `1:30`, editable.
 4. `live`, displayed as `LIVE`, read-only.
-5. `opportunityFunding`, displayed as `Opps funding`, read-only.
+5. `opportunityFunding`, displayed as `Opps funding`, editable.
+
+Period editability is an allowlist in the domain contract. Even in an editable
+period, only rows whose `valueMode` is `input` can enter edit mode. Bucket labels,
+LIVE values, sections, subtotals, totals, and closing balances remain read-only.
 
 ## Sec Corp row mapping
 
@@ -67,21 +71,30 @@ Content-Type: application/json
 {
   "schemaVersion": 1,
   "expectedVersion": 17,
-  "businessDate": "2026-07-25",
-  "snapshotValues": {
-    "occ": {
-      "snapshot0830": "-308824714.48",
-      "snapshot1130": "-306000000.00",
-      "snapshot1330": "-302500000.00"
-    }
+  "report": {
+    "schemaVersion": 1,
+    "reportId": "sec-corp-2026-07-25",
+    "panelCode": "sec-corp",
+    "title": "Sec Corp",
+    "businessDate": "2026-07-25",
+    "currency": "USD",
+    "timezone": "America/New_York",
+    "asOf": "2026-07-25T13:42:18-04:00",
+    "version": 17,
+    "permissions": { "canEdit": true, "canSave": true },
+    "periods": ["all five period objects from GET"],
+    "rows": ["all row objects, values, and calculations from the edited report"]
   }
 }
 ```
 
-The real request includes every input row because PUT replaces the complete
-editable snapshot state. The database compares `expectedVersion` atomically,
-increments the version on success, recalculates authoritative totals, and
-returns the complete report.
+The arrays above are abbreviated only for readability. The real request sends
+the complete report dataset: metadata, permissions, all five period definitions,
+every row, every period value, and every calculation definition. The database
+compares `expectedVersion` atomically, validates the report identity, persists
+the allowed input values, increments the version, recalculates authoritative
+totals, and returns the complete report. The backend must not trust client-sent
+calculated values or server-owned metadata without validation.
 
 Stale saves return:
 

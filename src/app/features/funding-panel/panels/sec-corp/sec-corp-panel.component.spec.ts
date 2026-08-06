@@ -38,6 +38,8 @@ describe('SecCorpPanelComponent', () => {
       expect(panel?.dataset['loadStatus']).toBe('ready');
       expect(fixture.componentInstance.store.viewModel()?.rows).toHaveLength(37);
       expect(fixture.debugElement.query(By.directive(FundingGridComponent))).not.toBeNull();
+      expect(panel?.querySelector('[data-testid="update-report"]')).not.toBeNull();
+      expect(panel?.querySelector('[data-testid="refresh-report"]')).not.toBeNull();
     });
   });
 

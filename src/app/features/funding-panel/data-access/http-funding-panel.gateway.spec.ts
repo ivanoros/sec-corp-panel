@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { APP_RUNTIME_CONFIG, type RuntimeConfig } from '../../../core/config/runtime-config';
-import { selectSnapshotValues, type SaveFundingReportCommand } from '../domain/funding-report';
+import type { SaveFundingReportCommand } from '../domain/funding-report';
 import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
 import type { FundingPanelVersionConflictError } from './funding-panel.gateway';
 import { HttpFundingPanelGateway } from './http-funding-panel.gateway';
@@ -54,15 +54,12 @@ describe('HttpFundingPanelGateway', () => {
     await expect(result).resolves.toEqual(report);
   });
 
-  it('sends a complete versioned PUT replacement', async () => {
+  it('sends the complete report dataset in a versioned PUT replacement', async () => {
     const report = createSecCorpReportFixture();
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
-      reportId: report.reportId,
-      panelCode: report.panelCode,
-      businessDate: report.businessDate,
       expectedVersion: report.version,
-      snapshotValues: selectSnapshotValues(report),
+      report,
     };
     const result = firstValueFrom(gateway.putReport(command));
     const request = httpTesting.expectOne(
@@ -74,8 +71,7 @@ describe('HttpFundingPanelGateway', () => {
     expect(request.request.body).toEqual({
       schemaVersion: 1,
       expectedVersion: 17,
-      businessDate: '2026-07-25',
-      snapshotValues: command.snapshotValues,
+      report,
     });
 
     request.flush({
@@ -93,11 +89,8 @@ describe('HttpFundingPanelGateway', () => {
     const report = createSecCorpReportFixture();
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
-      reportId: report.reportId,
-      panelCode: report.panelCode,
-      businessDate: report.businessDate,
       expectedVersion: report.version,
-      snapshotValues: selectSnapshotValues(report),
+      report,
     };
     const result = firstValueFrom(gateway.putReport(command));
     const request = httpTesting.expectOne(

@@ -47,28 +47,33 @@ GET {apiBaseUrl}/v1/funding-panels/sec-corp?businessDate=YYYY-MM-DD
 PUT {apiBaseUrl}/v1/funding-panels/sec-corp/{reportId}
 ```
 
-The PUT must atomically compare `expectedVersion`/`If-Match`, persist the full
-editable snapshot state, increment the version, recalculate authoritative
-totals, and return the complete report. A stale write must return HTTP 409 or 412. Review the exact payload and response schema in
+The PUT must receive the complete report dataset, atomically compare
+`expectedVersion`/`If-Match`, persist the allowed input values, increment the
+version, recalculate authoritative totals, and return the complete report. A
+stale write must return HTTP 409 or 412. Review the exact payload and response schema in
 `docs/architecture/phase-2-domain-contract.md`.
 
 ## Deployment smoke test
 
 1. Open Sec Corp for a known business date and confirm all 37 rows render.
 2. Confirm the columns are Bucket, 8:30, 11:30, 1:30, LIVE, and Opps funding.
-3. Confirm LIVE and Opps funding cannot enter edit mode.
-4. Edit an input row in each snapshot column; verify totals preview immediately.
-5. Leave the cell; verify one PUT is sent with matching `expectedVersion` and
-   `If-Match`.
-6. Confirm the returned version is higher and the dirty marker clears.
-7. Trigger the shell's manual refresh and verify the same business date is
-   requested.
-8. Simulate a stale version and verify edits remain visible until the operator
-   confirms discard and reload.
-9. Use keyboard-only navigation to edit, commit with Enter/Tab, and cancel with
-   Escape.
-10. Resize the docked panel narrowly and verify the grid scrolls horizontally
-    while save/conflict controls remain inside the panel.
+3. Confirm Bucket and LIVE cannot enter edit mode.
+4. Edit an input row in each snapshot column and Opps funding; verify totals
+   preview immediately. Confirm calculated rows remain read-only in every period.
+5. Leave each cell; verify no PUT is sent and dirty markers remain.
+6. Select Update; verify one PUT sends the complete report dataset with matching
+   `expectedVersion` and `If-Match`.
+7. Confirm the returned version is higher and the dirty markers clear.
+8. Select Refresh and verify GET uses the same business date.
+9. Make an unsaved edit, select Refresh, and verify discard confirmation appears.
+10. Trigger the shell's manual refresh on a clean panel and verify the same
+    business date is requested.
+11. Simulate a stale version and verify edits remain visible until the operator
+    confirms discard and reload.
+12. Use keyboard-only navigation to edit, commit with Enter/Tab, and cancel with
+    Escape.
+13. Resize the docked panel narrowly and verify the grid scrolls horizontally
+    while update/conflict controls remain inside the panel.
 
 ## Operator states
 
@@ -81,8 +86,8 @@ totals, and return the complete report. A stale write must return HTTP 409 or 41
   discards those local values. There is intentionally no client-side merge.
 - **Invalid edit:** the cell remains active with an inline validation message;
   save and manual refresh remain blocked.
-- **Manual refresh during save:** refresh is queued and starts after the valid
-  save succeeds.
+- **Dirty Refresh:** the panel asks for confirmation and never saves implicitly.
+- **Refresh during Update:** Refresh is disabled until the request completes.
 
 ## Troubleshooting
 

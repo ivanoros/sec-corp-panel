@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { PERIOD_IDS, SNAPSHOT_PERIOD_IDS } from '../domain/funding-report';
+import { PERIOD_IDS } from '../domain/funding-report';
 
 const canonicalDecimalSchema = z.string().regex(/^-?(?:0|[1-9]\d*)\.\d{2}$/);
 const identifierSchema = z.string().trim().min(1).max(120);
@@ -18,14 +18,6 @@ export const fundingValueMapSchema = z
     snapshot1330: canonicalDecimalSchema.nullable(),
     live: canonicalDecimalSchema.nullable(),
     opportunityFunding: canonicalDecimalSchema.nullable(),
-  })
-  .strict();
-
-export const snapshotValueMapSchema = z
-  .object({
-    snapshot0830: canonicalDecimalSchema,
-    snapshot1130: canonicalDecimalSchema,
-    snapshot1330: canonicalDecimalSchema,
   })
   .strict();
 
@@ -85,10 +77,18 @@ export const saveFundingReportRequestSchema = z
   .object({
     schemaVersion: z.literal(1),
     expectedVersion: z.number().int().positive(),
-    businessDate: businessDateSchema,
-    snapshotValues: z.record(identifierSchema, snapshotValueMapSchema),
+    report: fundingReportSchema,
   })
-  .strict();
+  .strict()
+  .superRefine(({ expectedVersion, report }, context) => {
+    if (report.version !== expectedVersion) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Report version must match expectedVersion.',
+        path: ['report', 'version'],
+      });
+    }
+  });
 
 export const versionConflictResponseSchema = z
   .object({
@@ -100,7 +100,6 @@ export const versionConflictResponseSchema = z
   .strict();
 
 export const contractPeriodIds = PERIOD_IDS;
-export const contractSnapshotPeriodIds = SNAPSHOT_PERIOD_IDS;
 
 function isValidBusinessDate(value: string): boolean {
   const [yearText, monthText, dayText] = value.split('-');

@@ -30,37 +30,40 @@ The shell dirty flag includes a changed active editor value as well as committed
 overlay values, so closing or replacing a panel cannot bypass an edit that has
 not lost focus yet.
 
-## Edit and autosave sequence
+## Edit and explicit update sequence
 
 1. The editor begins on an input row in `8:30`, `11:30`, or `1:30`.
 2. Every valid keystroke updates the computed preview and dependent totals.
 3. Lost focus, Enter, or Tab will call `commitEdit` in the grid phase.
-4. A valid commit moves the value to the edit overlay and immediately queues a
-   complete versioned PUT.
-5. Escape will call `cancelEdit`; an invalid commit remains in the editor.
+4. A valid commit moves the value to the edit overlay. It does not call the API.
+5. The operator can edit additional cells while preview totals continue to
+   recalculate locally.
+6. Selecting `Update` commits any active valid editor and sends one complete
+   versioned PUT.
+7. Escape calls `cancelEdit`; an invalid commit remains in the editor.
 
 Editable cells require both `canEdit` and `canSave`. This avoids allowing an
-edit that the mandatory autosave workflow could never persist.
+edit that the explicit Update workflow could never persist.
 
 The input validator accepts conventional financial forms such as
 `1,234.5`, `$1,234.50`, and `(1,234.50)`, then emits the canonical signed
 two-decimal string required by the REST contract.
 
-## Serialized and coalesced saves
+## Explicit and serialized updates
 
-Only one PUT can be in flight for a store. Each PUT captures the complete
-editable snapshot state and the current confirmed version.
+Only one PUT can be in flight for a store. Each Update captures the complete
+preview report dataset and the current confirmed version.
 
 Edits made while that PUT is pending remain in the overlay. When the response
 arrives, the overlay is rebased against the authoritative returned report:
 
 - values accepted by the server disappear from the overlay;
-- newer user values remain and are sent once in the next PUT;
+- newer user values remain dirty for the next explicit Update;
 - a user reverting a cell while its earlier value is in flight is preserved as
-  explicit intent and is also sent in the next PUT.
+  explicit intent and can be sent by the next Update.
 
-This provides serialization without dropping rapid edits or issuing one
-parallel request per cell.
+This provides serialization without dropping rapid edits, issuing requests on
+focus loss, or saving post-click changes without another operator action.
 
 ## Version conflicts and errors
 
@@ -82,9 +85,9 @@ The store uses effects only at two imperative boundaries:
 - publishing computed dirty/save/refresh state to the shell adapter;
 - responding to the shell adapter's refresh revision.
 
-A refresh requested during a valid active edit commits it. A refresh requested
-during save waits for the save queue to become clean, then performs GET. Invalid
-edits, failed saves, and version conflicts block refresh.
+A clean refresh performs GET immediately. Refreshing with dirty values requires
+explicit confirmation because the GET discards the local overlay. Invalid edits,
+an in-flight Update, and version conflicts block normal refresh.
 
 There is no timer and no polling.
 

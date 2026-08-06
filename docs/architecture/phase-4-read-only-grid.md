@@ -3,7 +3,7 @@
 ## Scope
 
 Phase 4 renders the Phase 3 view model as a responsive, read-only AG Grid. Cell
-editing, editor lifecycle events, validation presentation, and autosave wiring
+editing, editor lifecycle events, validation presentation, and explicit Update wiring
 remain Phase 5 work.
 
 ## Panel boundary
@@ -50,8 +50,8 @@ teal section bands, muted teal totals, tabular numeric alignment, and restrained
 grid lines visible in the references.
 
 All Phase 4 column definitions remain read-only even when the view model reports
-that a cell is eligible for editing. Phase 5 will selectively enable only input
-rows in the three snapshot columns.
+that a cell is eligible for editing. Phase 5 selectively enables input rows in
+the three snapshot columns and Opps funding.
 
 The grid component uses unencapsulated styles because AG Grid creates its
 internal DOM below a third-party component boundary. Every selector is scoped

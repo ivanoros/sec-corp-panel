@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
 import { FUNDING_PANEL_GATEWAY } from '../../data-access/funding-panel.gateway';
-import { selectSnapshotValues, type SaveFundingReportCommand } from '../../domain/funding-report';
+import type { SaveFundingReportCommand } from '../../domain/funding-report';
 import { FundingGridComponent } from '../../presentation/funding-grid/funding-grid.component';
 import { PbilPanelComponent } from './pbil-panel.component';
 
@@ -43,7 +43,7 @@ describe('PbilPanelComponent', () => {
     });
   });
 
-  it('keeps LIVE and Opps funding read-only while snapshot inputs are editable', async () => {
+  it('allows snapshot and Opps funding inputs while keeping LIVE read-only', async () => {
     const fixture = TestBed.createComponent(PbilPanelComponent);
 
     fixture.detectChanges();
@@ -57,11 +57,11 @@ describe('PbilPanelComponent', () => {
       expect(arrangedFunding?.cells.snapshot1130.editable).toBe(true);
       expect(arrangedFunding?.cells.snapshot1330.editable).toBe(true);
       expect(arrangedFunding?.cells.live.editable).toBe(false);
-      expect(arrangedFunding?.cells.opportunityFunding.editable).toBe(false);
+      expect(arrangedFunding?.cells.opportunityFunding.editable).toBe(true);
     });
   });
 
-  it('autosaves a PBIL snapshot edit with versioning and recalculates EOD', async () => {
+  it('keeps a committed edit local until Update sends the complete report', async () => {
     const fixture = TestBed.createComponent(PbilPanelComponent);
     const store = fixture.componentInstance.store;
 
@@ -76,6 +76,17 @@ describe('PbilPanelComponent', () => {
       '9740000000.00',
     );
     expect(store.commitEdit()).toBe(true);
+    expect(store.saveStatus()).toBe('idle');
+    expect(store.report()?.version).toBe(7);
+    expect(store.isDirty()).toBe(true);
+
+    fixture.detectChanges();
+    const updateButton = fixture.nativeElement.querySelector(
+      '[data-testid="update-report"]',
+    ) as HTMLButtonElement | null;
+
+    expect(updateButton?.disabled).toBe(false);
+    updateButton?.click();
 
     await vi.waitFor(() => {
       expect(store.saveStatus()).toBe('saved');
@@ -102,11 +113,8 @@ describe('PbilPanelComponent', () => {
 
     const externalUpdate: SaveFundingReportCommand = {
       schemaVersion: 1,
-      reportId: screenReport.reportId,
-      panelCode: screenReport.panelCode,
-      businessDate: screenReport.businessDate,
       expectedVersion: screenReport.version,
-      snapshotValues: selectSnapshotValues(screenReport),
+      report: screenReport,
     };
     const externallySavedReport = await firstValueFrom(gateway.putReport(externalUpdate));
 
@@ -115,6 +123,7 @@ describe('PbilPanelComponent', () => {
 
     store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
     expect(store.commitEdit()).toBe(true);
+    expect(store.updateReport()).toBe(true);
 
     await vi.waitFor(() => {
       expect(store.saveStatus()).toBe('conflict');
@@ -132,5 +141,70 @@ describe('PbilPanelComponent', () => {
     expect(conflictText).toContain('your changes were not saved');
     expect(conflictText).toContain('Screen version 7; latest version 8');
     expect(conflictText).toContain('Reload latest data');
+  });
+
+  it('uses Refresh to retrieve the latest backend report', async () => {
+    const fixture = TestBed.createComponent(PbilPanelComponent);
+    const store = fixture.componentInstance.store;
+    const gateway = fixture.debugElement.injector.get(FUNDING_PANEL_GATEWAY);
+
+    fixture.detectChanges();
+    await vi.waitFor(() => {
+      expect(store.loadStatus()).toBe('ready');
+    });
+
+    const screenReport = store.report();
+
+    if (screenReport === null) {
+      throw new Error('Expected the PBIL report to be loaded.');
+    }
+
+    const externallySavedReport = await firstValueFrom(
+      gateway.putReport({
+        schemaVersion: 1,
+        expectedVersion: screenReport.version,
+        report: screenReport,
+      }),
+    );
+
+    expect(externallySavedReport.version).toBe(8);
+    expect(store.report()?.version).toBe(7);
+
+    fixture.detectChanges();
+    const refreshButton = fixture.nativeElement.querySelector(
+      '[data-testid="refresh-report"]',
+    ) as HTMLButtonElement | null;
+
+    expect(refreshButton?.disabled).toBe(false);
+    refreshButton?.click();
+
+    await vi.waitFor(() => {
+      expect(store.report()?.version).toBe(8);
+    });
+  });
+
+  it('requires confirmation before Refresh discards unsaved edits', async () => {
+    const fixture = TestBed.createComponent(PbilPanelComponent);
+    const store = fixture.componentInstance.store;
+
+    fixture.detectChanges();
+    await vi.waitFor(() => {
+      expect(store.loadStatus()).toBe('ready');
+    });
+
+    store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
+    store.commitEdit();
+    fixture.detectChanges();
+
+    const refreshButton = fixture.nativeElement.querySelector(
+      '[data-testid="refresh-report"]',
+    ) as HTMLButtonElement | null;
+    refreshButton?.click();
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="refresh-discard-confirmation"]'),
+    ).not.toBeNull();
+    expect(store.isDirty()).toBe(true);
   });
 });

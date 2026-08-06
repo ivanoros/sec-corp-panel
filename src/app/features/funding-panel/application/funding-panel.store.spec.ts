@@ -59,8 +59,58 @@ describe('FundingPanelStore', () => {
     expect(gateway.putCommands).toHaveLength(0);
 
     expect(store.commitEdit()).toBe(true);
+    expect(gateway.putCommands).toHaveLength(0);
+    expect(store.saveStatus()).toBe('idle');
+    expect(store.canUpdate()).toBe(true);
+
+    expect(store.updateReport()).toBe(true);
     expect(gateway.putCommands).toHaveLength(1);
     expect(store.saveStatus()).toBe('saving');
+  });
+
+  it('does not commit a newly opened cell when an earlier editor finishes late', async () => {
+    await waitForReady(store);
+
+    store.beginEdit('nscc', 'snapshot1130', '123');
+
+    expect(
+      store.commitEdit({
+        rowId: 'nscc',
+        periodId: 'snapshot0830',
+      }),
+    ).toBe(true);
+    expect(store.activeEdit()?.periodId).toBe('snapshot1130');
+    expect(store.isDirty()).toBe(true);
+
+    expect(
+      store.commitEdit({
+        rowId: 'nscc',
+        periodId: 'snapshot1130',
+      }),
+    ).toBe(true);
+    expect(store.activeEdit()).toBeNull();
+    expect(findRow(store.report(), 'nscc').values.snapshot1130).toBe('123.00');
+  });
+
+  it('edits Opps funding, previews totals, and includes the value in the full Update report', async () => {
+    await waitForReady(store);
+
+    const originalTotal = findRow(store.report(), 'total-margin').values.opportunityFunding;
+
+    store.beginEdit('occ', 'opportunityFunding', '-290000000');
+
+    expect(findRow(store.report(), 'occ').values.opportunityFunding).toBe('-290000000.00');
+    expect(findRow(store.report(), 'total-margin').values.opportunityFunding).not.toBe(
+      originalTotal,
+    );
+    expect(gateway.putCommands).toHaveLength(0);
+
+    expect(store.commitEdit()).toBe(true);
+    expect(store.updateReport()).toBe(true);
+    expect(findRow(gateway.putCommands[0]?.report ?? null, 'occ').values.opportunityFunding).toBe(
+      '-290000000.00',
+    );
+    expect(gateway.putCommands[0]?.report.rows).toHaveLength(37);
   });
 
   it('keeps invalid input active and blocks save and refresh', async () => {
@@ -70,27 +120,39 @@ describe('FundingPanelStore', () => {
 
     expect(validation.isValid).toBe(false);
     expect(store.commitEdit()).toBe(false);
+    expect(store.updateReport()).toBe(false);
     expect(store.requestRefresh()).toBe(false);
     expect(store.hostState().canRefresh).toBe(false);
     expect(gateway.putCommands).toHaveLength(0);
   });
 
-  it('serializes saves and coalesces edits made during an in-flight PUT', async () => {
+  it('saves only on Update and leaves changes made during the PUT for the next Update', async () => {
     await waitForReady(store);
 
     store.beginEdit('occ', 'snapshot0830', '-300000000');
     store.commitEdit();
+    expect(store.updateReport()).toBe(true);
     store.beginEdit('nscc', 'snapshot1130', '30000000');
     store.commitEdit();
 
     expect(gateway.putCommands).toHaveLength(1);
 
     gateway.resolvePut(savedReport(gateway.putCommands[0], 18));
-    await waitForPutCount(gateway, 2);
+    await vi.waitFor(() => {
+      expect(store.saveStatus()).toBe('idle');
+    });
+
+    expect(gateway.putCommands).toHaveLength(1);
+    expect(store.isDirty()).toBe(true);
+    expect(store.updateReport()).toBe(true);
 
     expect(gateway.putCommands[1]?.expectedVersion).toBe(18);
-    expect(gateway.putCommands[1]?.snapshotValues['occ']?.snapshot0830).toBe('-300000000.00');
-    expect(gateway.putCommands[1]?.snapshotValues['nscc']?.snapshot1130).toBe('30000000.00');
+    expect(findRow(gateway.putCommands[1]?.report ?? null, 'occ').values.snapshot0830).toBe(
+      '-300000000.00',
+    );
+    expect(findRow(gateway.putCommands[1]?.report ?? null, 'nscc').values.snapshot1130).toBe(
+      '30000000.00',
+    );
 
     gateway.resolvePut(savedReport(gateway.putCommands[1], 19));
     await vi.waitFor(() => {
@@ -105,13 +167,20 @@ describe('FundingPanelStore', () => {
 
     store.beginEdit('occ', 'snapshot0830', '-300000000');
     store.commitEdit();
+    expect(store.updateReport()).toBe(true);
     store.beginEdit('occ', 'snapshot0830', '-308824714.48');
     store.commitEdit();
 
     gateway.resolvePut(savedReport(gateway.putCommands[0], 18));
-    await waitForPutCount(gateway, 2);
+    await vi.waitFor(() => {
+      expect(store.saveStatus()).toBe('idle');
+    });
 
-    expect(gateway.putCommands[1]?.snapshotValues['occ']?.snapshot0830).toBe('-308824714.48');
+    expect(gateway.putCommands).toHaveLength(1);
+    expect(store.updateReport()).toBe(true);
+    expect(findRow(gateway.putCommands[1]?.report ?? null, 'occ').values.snapshot0830).toBe(
+      '-308824714.48',
+    );
   });
 
   it('retains dirty work on a version conflict until the user explicitly discards it', async () => {
@@ -119,6 +188,7 @@ describe('FundingPanelStore', () => {
 
     store.beginEdit('occ', 'snapshot0830', '-300000000');
     store.commitEdit();
+    store.updateReport();
     gateway.rejectPut(new FundingPanelVersionConflictError(17, 18));
 
     await vi.waitFor(() => {
@@ -134,20 +204,18 @@ describe('FundingPanelStore', () => {
     expect(gateway.getCalls).toHaveLength(2);
   });
 
-  it('delays manual refresh until a pending valid save completes', async () => {
+  it('does not save implicitly and requires dirty work to be discarded before refresh', async () => {
     await waitForReady(store);
 
     store.beginEdit('occ', 'snapshot0830', '-300000000');
     store.commitEdit();
 
-    expect(store.requestRefresh()).toBe(true);
+    expect(store.requestRefresh()).toBe(false);
+    expect(gateway.putCommands).toHaveLength(0);
     expect(gateway.getCalls).toHaveLength(1);
 
-    gateway.resolvePut(savedReport(gateway.putCommands[0], 18));
-
-    await vi.waitFor(() => {
-      expect(gateway.getCalls).toHaveLength(2);
-    });
+    expect(store.discardChangesAndRefresh()).toBe(true);
+    expect(gateway.getCalls).toHaveLength(2);
   });
 
   it('retrieves the same business date when the shell requests a manual refresh', async () => {
@@ -209,6 +277,7 @@ describe('FundingPanelStore', () => {
 
     store.beginEdit('occ', 'snapshot0830', '-300000000');
     store.commitEdit();
+    store.updateReport();
     gateway.rejectPut(new Error('Funding service is unavailable.'));
 
     await vi.waitFor(() => {
@@ -282,15 +351,6 @@ async function waitForReady(store: FundingPanelStore): Promise<void> {
   });
 }
 
-async function waitForPutCount(
-  gateway: ControllableFundingPanelGateway,
-  expectedCount: number,
-): Promise<void> {
-  await vi.waitFor(() => {
-    expect(gateway.putCommands).toHaveLength(expectedCount);
-  });
-}
-
 function savedReport(
   command: SaveFundingReportCommand | undefined,
   version: number,
@@ -299,28 +359,11 @@ function savedReport(
     throw new Error('Missing save command.');
   }
 
-  const baseReport = createSecCorpReportFixture();
-
   return recalculateFundingReport({
-    ...baseReport,
+    ...command.report,
     asOf: `2026-07-25T14:00:${String(version).padStart(2, '0')}-04:00`,
     version,
-    rows: baseReport.rows.map((row) => applyCommand(row, command)),
   });
-}
-
-function applyCommand(row: FundingRow, command: SaveFundingReportCommand): FundingRow {
-  const snapshotValues = command.snapshotValues[row.id];
-
-  return snapshotValues === undefined
-    ? row
-    : {
-        ...row,
-        values: {
-          ...row.values,
-          ...snapshotValues,
-        },
-      };
 }
 
 function findRow(report: FundingReport | null, rowId: string): FundingRow {

@@ -29,7 +29,7 @@ describe('Sec Corp report fixture', () => {
       { label: '11:30', editable: true },
       { label: '1:30', editable: true },
       { label: 'LIVE', editable: false },
-      { label: 'Opps funding', editable: false },
+      { label: 'Opps funding', editable: true },
     ]);
   });
 

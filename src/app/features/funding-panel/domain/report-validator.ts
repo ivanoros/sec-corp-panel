@@ -1,7 +1,7 @@
 import { findCalculationMismatches, FundingCalculationError } from './report-calculator';
 import {
+  EDITABLE_PERIOD_IDS,
   PERIOD_IDS,
-  SNAPSHOT_PERIOD_IDS,
   type FundingReport,
   type FundingRow,
 } from './funding-report';
@@ -32,8 +32,8 @@ export function validateFundingReport(report: FundingReport): readonly FundingCo
 
     periodIds.add(period.id);
 
-    const shouldBeEditable = SNAPSHOT_PERIOD_IDS.includes(
-      period.id as (typeof SNAPSHOT_PERIOD_IDS)[number],
+    const shouldBeEditable = EDITABLE_PERIOD_IDS.includes(
+      period.id as (typeof EDITABLE_PERIOD_IDS)[number],
     );
 
     if (period.editable !== shouldBeEditable) {

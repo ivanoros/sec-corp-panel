@@ -15,6 +15,7 @@
     spellcheck="false"
     type="text"
     [value]="rawValue()"
+    (blur)="onBlur()"
     (input)="onInput($event)"
     (keydown)="onKeyDown($event)"
   />

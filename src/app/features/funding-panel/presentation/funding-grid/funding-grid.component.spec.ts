@@ -4,7 +4,6 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { GridReadyEvent } from 'ag-grid-community';
 
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
-import { FundingPanelStore } from '../../application/funding-panel.store';
 import { createSecCorpReportFixture } from '../../panels/sec-corp/mocks/sec-corp-report.fixture';
 import { type FundingGridRowViewModel, toFundingGridViewModel } from '../funding-grid.viewmodel';
 import {
@@ -14,10 +13,6 @@ import {
 } from './funding-grid.component';
 
 describe('FundingGridComponent', () => {
-  const store = {
-    commitEdit: vi.fn(() => true),
-  };
-
   beforeAll(() => {
     configureAgGrid({
       agGridEnterpriseLicenseKey: null,
@@ -25,15 +20,7 @@ describe('FundingGridComponent', () => {
   });
 
   beforeEach(() => {
-    store.commitEdit.mockClear();
-    TestBed.configureTestingModule({
-      providers: [
-        {
-          provide: FundingPanelStore,
-          useValue: store,
-        },
-      ],
-    });
+    TestBed.configureTestingModule({});
   });
 
   it('renders the complete report through AG Grid', async () => {
@@ -54,7 +41,7 @@ describe('FundingGridComponent', () => {
     const description = fixture.nativeElement.querySelector(`#${descriptionId}`) as HTMLElement;
 
     expect(description.textContent).toContain('Currency USD.');
-    expect(description.textContent).toContain('LIVE and Opps funding are read-only');
+    expect(description.textContent).toContain('Bucket and LIVE are read-only');
     expect(grid.rowData).toHaveLength(37);
     expect(grid.columnDefs?.map(({ headerName }) => headerName)).toEqual([
       'Bucket',
@@ -96,7 +83,7 @@ describe('FundingGridComponent', () => {
     );
   });
 
-  it('enables only input rows in snapshot columns', () => {
+  it('enables input rows in snapshots and Opps funding only', () => {
     const report = createSecCorpReportFixture();
     const viewModel = toFundingGridViewModel(report, {}, null);
     const occ = requireRow(viewModel.rows, 'occ');
@@ -109,22 +96,12 @@ describe('FundingGridComponent', () => {
     expect(columns).toHaveLength(6);
     expect(isFundingGridCellEditable(occ, snapshotPeriod)).toBe(true);
     expect(isFundingGridCellEditable(occ, livePeriod)).toBe(false);
-    expect(isFundingGridCellEditable(occ, opportunityPeriod)).toBe(false);
+    expect(isFundingGridCellEditable(occ, opportunityPeriod)).toBe(true);
     expect(isFundingGridCellEditable(totalMargin, snapshotPeriod)).toBe(false);
+    expect(isFundingGridCellEditable(totalMargin, opportunityPeriod)).toBe(false);
     expect(columns.find(({ colId }) => colId === 'snapshot0830')?.cellEditor).toBeDefined();
     expect(columns.find(({ colId }) => colId === 'live')?.cellEditor).toBeUndefined();
-  });
-
-  it('commits the active store edit when AG Grid finishes editing', () => {
-    const fixture = TestBed.createComponent(FundingGridComponent);
-    fixture.componentRef.setInput(
-      'viewModel',
-      toFundingGridViewModel(createSecCorpReportFixture(), {}, null),
-    );
-
-    fixture.componentInstance.onCellEditingStopped();
-
-    expect(store.commitEdit).toHaveBeenCalledOnce();
+    expect(columns.find(({ colId }) => colId === 'opportunityFunding')?.cellEditor).toBeDefined();
   });
 });
 

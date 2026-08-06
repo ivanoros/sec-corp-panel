@@ -3,7 +3,7 @@
 ## Scope reconciliation
 
 The optimistic-concurrency state machine, failed-save retention, conflict
-handling, and queued manual refresh originally planned around this phase were
+handling, and protected manual refresh originally planned around this phase were
 implemented early in Phases 3 and 5 because editing could not be made safe
 without them.
 
@@ -52,7 +52,7 @@ does not introduce environment checks into business or presentation logic.
 The HTTP mode preserves the approved concurrency contract:
 
 1. GET returns a complete report and positive `version`.
-2. PUT sends the complete editable snapshot state.
+2. PUT sends the complete edited report dataset.
 3. `expectedVersion` is present in the JSON body.
 4. `If-Match` contains the same quoted version.
 5. `409` or `412` becomes `FundingPanelVersionConflictError`.
@@ -68,7 +68,8 @@ The shell adapter's revision signal is the only automatic trigger observed by
 the store. When the shell requests refresh, the store repeats the original
 `panelCode` and `businessDate`.
 
-Valid active edits commit and save before GET. Invalid edits, failed saves, and
-version conflicts block GET so no local work is silently discarded.
+Clean panels refresh immediately. Dirty panels require explicit discard
+confirmation before GET. Invalid edits, in-flight updates, and version conflicts
+block normal GET so no local work is silently discarded.
 
 There is no interval, timer, or polling subscription.

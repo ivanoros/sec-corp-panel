@@ -70,7 +70,7 @@ the runtime Enterprise license path remains ready for future licensed modules.
 
 A future funding panel should reuse:
 
-- `FundingPanelStore` for edit overlays, preview totals, autosave,
+- `FundingPanelStore` for edit overlays, preview totals, explicit Update,
   optimistic concurrency, retry, and refresh coordination;
 - `FundingGridComponent` and the financial editor for rendering and input;
 - `FUNDING_PANEL_DATA_ACCESS_PROVIDERS` for mock/HTTP runtime selection;
@@ -91,14 +91,17 @@ this repository.
 
 ## Known development-tool advisory
 
-The production audit reports zero vulnerabilities. The full audit reports
-three moderate, development-only findings on this transitive path:
+The Angular runtime packages are pinned to patched Angular 21.2.19, and the
+production audit reports zero vulnerabilities. The full audit currently reports
+eight development-tool findings (five moderate and three high) on transitive
+Angular CLI/build dependency paths, including:
 
 ```text
 @angular/cli -> @modelcontextprotocol/sdk -> @hono/node-server
+@angular/build -> undici
 ```
 
-The automated forced fix proposes downgrading Angular CLI to `21.0.4`, outside
-the current Angular 21.2 toolchain. It is intentionally not applied. Recheck the
-advisory during routine dependency updates and upgrade when the Angular CLI
-dependency path provides a compatible patched version.
+The automated forced fixes propose incompatible Angular CLI/build downgrades,
+so they are intentionally not applied. Recheck these advisories during routine
+dependency updates and upgrade when the Angular 21 toolchain provides compatible
+patched transitive dependencies.

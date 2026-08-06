@@ -5,6 +5,26 @@
   [attr.data-load-status]="store.loadStatus()"
   [attr.data-testid]="panelCode() + '-panel'"
 >
+  <div aria-label="Report actions" class="funding-panel-surface__toolbar" role="toolbar">
+    <button
+      class="funding-panel-surface__toolbar-action funding-panel-surface__toolbar-action--primary"
+      data-testid="update-report"
+      type="button"
+      [disabled]="!store.canUpdate()"
+      (click)="updateReport()"
+    >
+      Update
+    </button>
+    <button
+      class="funding-panel-surface__toolbar-action"
+      data-testid="refresh-report"
+      type="button"
+      [disabled]="!store.canRequestRefresh()"
+      (click)="requestRefresh()"
+    >
+      Refresh
+    </button>
+  </div>
   @if (store.loadStatus() === 'loading') {
     <div aria-live="polite" class="funding-panel-surface__status" data-testid="loading-state">
       <span aria-hidden="true" class="funding-panel-surface__spinner"></span>
@@ -19,9 +39,31 @@
     </div>
   } @else if (store.viewModel(); as viewModel) {
     <app-funding-grid [viewModel]="viewModel" />
-    @if (store.saveStatus() === 'saving') {
+    @if (confirmingRefreshDiscard()) {
+      <div
+        class="funding-panel-surface__save-state funding-panel-surface__save-state--warning"
+        data-testid="refresh-discard-confirmation"
+        role="alert"
+      >
+        <span>Refreshing will discard the unsaved values shown on this screen.</span>
+        <button
+          class="funding-panel-surface__save-action"
+          type="button"
+          (click)="cancelRefreshDiscard()"
+        >
+          Keep editing
+        </button>
+        <button
+          class="funding-panel-surface__save-action funding-panel-surface__save-action--destructive"
+          type="button"
+          (click)="confirmRefreshDiscard()"
+        >
+          Discard and refresh
+        </button>
+      </div>
+    } @else if (store.saveStatus() === 'saving') {
       <div aria-live="polite" class="funding-panel-surface__save-state" data-testid="saving-state">
-        Saving…
+        Updating…
       </div>
     } @else if (store.saveStatus() === 'error') {
       <div

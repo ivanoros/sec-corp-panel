@@ -1,12 +1,13 @@
 import type { DecimalString } from '../domain/decimal-value';
 import {
+  isEditablePeriodId,
   PERIOD_IDS,
+  type EditablePeriodId,
   type FundingReport,
   type FundingRowKind,
   type FundingRowValueMode,
   type PeriodId,
   type ReportPeriod,
-  type SnapshotPeriodId,
 } from '../domain/funding-report';
 
 export type FundingGridValue = DecimalString | null;
@@ -45,11 +46,11 @@ export interface FundingGridViewModel {
 }
 
 export type DirtyFundingCells = Readonly<
-  Record<string, Readonly<Partial<Record<SnapshotPeriodId, DecimalString>>>>
+  Record<string, Readonly<Partial<Record<EditablePeriodId, DecimalString>>>>
 >;
 
 export interface ActiveFundingCell {
-  readonly periodId: SnapshotPeriodId;
+  readonly periodId: EditablePeriodId;
   readonly rowId: string;
   readonly validationMessage: string | null;
 }
@@ -69,14 +70,15 @@ export function toFundingGridViewModel(
       cells: Object.fromEntries(
         PERIOD_IDS.map((periodId) => {
           const isActive = activeCell?.rowId === row.id && activeCell.periodId === periodId;
-          const isSnapshot = isSnapshotPeriodId(periodId);
+          const isEditablePeriod = isEditablePeriodId(periodId);
 
           return [
             periodId,
             {
-              dirty: isSnapshot && dirtyCells[row.id]?.[periodId] !== undefined,
+              dirty: isEditablePeriod && dirtyCells[row.id]?.[periodId] !== undefined,
               editable:
-                isSnapshot &&
+                isEditablePeriod &&
+                report.periods.find(({ id }) => id === periodId)?.editable === true &&
                 row.valueMode === 'input' &&
                 report.permissions.canEdit &&
                 report.permissions.canSave,
@@ -99,8 +101,4 @@ export function toFundingGridViewModel(
     title: report.title,
     version: report.version,
   };
-}
-
-function isSnapshotPeriodId(periodId: PeriodId): periodId is SnapshotPeriodId {
-  return periodId === 'snapshot0830' || periodId === 'snapshot1130' || periodId === 'snapshot1330';
 }

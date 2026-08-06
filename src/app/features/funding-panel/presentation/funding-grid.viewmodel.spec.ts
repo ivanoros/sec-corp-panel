@@ -3,7 +3,7 @@ import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-re
 import { toFundingGridViewModel } from './funding-grid.viewmodel';
 
 describe('toFundingGridViewModel', () => {
-  it('maps domain rows without making calculated or live values editable', () => {
+  it('maps only editable-period input cells as editable', () => {
     const viewModel = toFundingGridViewModel(
       createSecCorpReportFixture(),
       {
@@ -26,8 +26,9 @@ describe('toFundingGridViewModel', () => {
       preview: true,
     });
     expect(occ.cells.live.editable).toBe(false);
-    expect(occ.cells.opportunityFunding.editable).toBe(false);
+    expect(occ.cells.opportunityFunding.editable).toBe(true);
     expect(totalMargin.cells.snapshot0830.editable).toBe(false);
+    expect(totalMargin.cells.opportunityFunding.editable).toBe(false);
   });
 
   it('carries active validation to only the edited cell', () => {

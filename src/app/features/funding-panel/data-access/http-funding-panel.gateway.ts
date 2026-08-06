@@ -36,8 +36,8 @@ export class HttpFundingPanelGateway implements FundingPanelGateway {
   putReport(command: SaveFundingReportCommand): Observable<FundingReport> {
     const request = toRequestDto(command);
     const url = `${this.resourceBaseUrl}/${encodeURIComponent(
-      command.panelCode,
-    )}/${encodeURIComponent(command.reportId)}`;
+      command.report.panelCode,
+    )}/${encodeURIComponent(command.report.reportId)}`;
     const headers = new HttpHeaders({
       'If-Match': `"${command.expectedVersion}"`,
     });
@@ -69,8 +69,7 @@ function toRequestDto(command: SaveFundingReportCommand): SaveFundingReportReque
   return saveFundingReportRequestSchema.parse({
     schemaVersion: command.schemaVersion,
     expectedVersion: command.expectedVersion,
-    businessDate: command.businessDate,
-    snapshotValues: command.snapshotValues,
+    report: command.report,
   });
 }
 

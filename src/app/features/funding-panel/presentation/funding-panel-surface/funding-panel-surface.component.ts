@@ -25,6 +25,7 @@ export class FundingPanelSurfaceComponent implements OnInit {
   readonly panelTitle = input.required<string>();
   readonly store = inject(FundingPanelStore);
   readonly confirmingConflictDiscard = signal(false);
+  readonly confirmingRefreshDiscard = signal(false);
   private readonly runtimeConfig = inject(APP_RUNTIME_CONFIG);
 
   constructor() {
@@ -44,6 +45,28 @@ export class FundingPanelSurfaceComponent implements OnInit {
 
   retrySave(): void {
     this.store.retrySave();
+  }
+
+  updateReport(): void {
+    this.store.updateReport();
+  }
+
+  requestRefresh(): void {
+    if (this.store.isDirty()) {
+      this.confirmingRefreshDiscard.set(true);
+      return;
+    }
+
+    this.store.requestRefresh();
+  }
+
+  cancelRefreshDiscard(): void {
+    this.confirmingRefreshDiscard.set(false);
+  }
+
+  confirmRefreshDiscard(): void {
+    this.confirmingRefreshDiscard.set(false);
+    this.store.discardChangesAndRefresh();
   }
 
   requestConflictDiscard(): void {

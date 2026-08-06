@@ -1,10 +1,13 @@
-# Phase 5 inline editing and autosave
+# Phase 5 inline editing and explicit Update
+
+The filename is retained for historical phase traceability. Autosave was later
+replaced by the approved Update and Refresh buttons.
 
 ## Scope
 
 Phase 5 connects AG Grid editing to the Phase 3 signals store. It enables only
-input rows in `8:30`, `11:30`, and `1:30`. `LIVE`, `Opps funding`, section rows,
-subtotals, totals, and closing balances remain read-only.
+input rows in `8:30`, `11:30`, `1:30`, and `Opps funding`. `Bucket`, `LIVE`,
+section rows, subtotals, totals, and closing balances remain read-only.
 
 ## Editor lifecycle
 
@@ -12,13 +15,16 @@ The funding grid uses a dedicated Angular financial cell editor rather than AG
 Grid's generic text editor.
 
 1. A single click, Enter, F2, or direct typing starts the editor.
-2. `agInit` calls `FundingPanelStore.beginEdit` with the row and snapshot ID.
+2. `agInit` calls `FundingPanelStore.beginEdit` with the row and editable period ID.
 3. Every input event calls `previewEdit`.
 4. A valid preview immediately updates computed subtotals and End of Day.
-5. Focus loss, Enter, or Tab asks AG Grid to finish editing.
-6. AG Grid's `cellEditingStopped` event calls `commitEdit`, which queues the
-   versioned PUT.
-7. Escape cancels the active preview and calls AG Grid's cancel path.
+5. On focus loss, Enter, or Tab, the editor calls `commitEdit` with its exact row
+   and period address before AG Grid navigates. This avoids committing the next
+   cell when Tab immediately opens another editor.
+6. Editor destruction repeats the address-guarded commit as a safe fallback.
+   The operation stores the value locally without making an API request.
+7. Selecting `Update` sends the complete preview report in one versioned PUT.
+8. Escape cancels the active preview and calls AG Grid's cancel path.
 
 AG Grid uses `readOnlyEdit`. It never mutates the view-model row. The signals
 store remains the only state owner, and every visible value is regenerated from
@@ -34,7 +40,7 @@ The editor shows an accessible inline message and invalid border. Valid values
 support conventional financial entry forms and are normalized to the canonical
 two-decimal REST representation before commit.
 
-## Dirty and save presentation
+## Dirty and update presentation
 
 Presentation classes are derived centrally from `FundingGridCellViewModel`.
 
@@ -42,11 +48,13 @@ Presentation classes are derived centrally from `FundingGridCellViewModel`.
 - The active preview has a teal inset border.
 - Committed unsaved cells show a small amber dirty marker.
 - Invalid cells and editors use the negative/error palette.
-- Dirty markers remain through pending saves and failures, then disappear only
-  after the authoritative PUT response accepts the value.
+- Dirty markers remain after focus loss, through pending updates and failures,
+  then disappear only after the authoritative PUT response accepts the value.
 
-There is no persistent Save or Revert bar. Valid commits autosave immediately.
-A compact overlay appears only while saving or when action is required:
+The shared toolbar contains `Update` and `Refresh`. Update is enabled only when
+valid dirty work exists. Refresh calls GET; when dirty work exists, the panel
+requires confirmation before discarding it. A compact overlay appears while
+updating or when action is required:
 
 - save failures preserve edits and offer Retry;
 - version conflicts preserve edits and offer the explicit destructive action
@@ -60,7 +68,7 @@ The editor intercepts Escape because it must cancel the store preview before AG
 Grid destroys the editor. Enter and Tab bubble to AG Grid's popup editor wrapper
 so its native navigation behavior remains intact. With
 `stopEditingWhenCellsLoseFocus`, clicking outside a valid editor commits and
-autosaves.
+recalculates the local preview. It does not save.
 
 Invalid values block navigation until corrected or cancelled with Escape.
 
@@ -69,5 +77,6 @@ Invalid values block navigation until corrected or cancelled with Escape.
 No additional AG Grid modules are registered. The existing client-side row
 model and runtime Enterprise license setup are sufficient.
 
-The REST contract is unchanged: every successful cell commit ultimately sends a
-complete editable snapshot replacement with `expectedVersion`.
+The REST contract sends the complete report dataset only when Update is
+selected. The body contains `expectedVersion` and the full report; `If-Match`
+contains the same quoted version.

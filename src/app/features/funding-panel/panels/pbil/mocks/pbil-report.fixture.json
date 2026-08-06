@@ -41,7 +41,7 @@
       "id": "opportunityFunding",
       "label": "Opps funding",
       "kind": "opportunity",
-      "editable": false
+      "editable": true
     }
   ],
   "rows": [

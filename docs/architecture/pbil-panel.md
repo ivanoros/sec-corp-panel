@@ -5,7 +5,7 @@
 PBIL is the second panel built on the shared funding-panel infrastructure. It
 reuses:
 
-- `FundingPanelStore` for preview calculations, dirty state, autosave,
+- `FundingPanelStore` for preview calculations, dirty state, explicit Update,
   optimistic concurrency, retry, conflict handling, and shell refresh;
 - `FundingPanelSurfaceComponent` for loading, grid, save, and conflict states;
 - `FundingGridComponent` and the financial editor;
@@ -19,9 +19,9 @@ GET /api/v1/funding-panels/pbil?businessDate=YYYY-MM-DD
 PUT /api/v1/funding-panels/pbil/{reportId}
 ```
 
-The PUT contract is unchanged: complete editable snapshot replacement,
-`expectedVersion` in the body, the same quoted value in `If-Match`, and atomic
-409/412 rejection when stale.
+The PUT contract sends the complete report dataset, `expectedVersion` in the
+body, the same quoted value in `If-Match`, and atomic 409/412 rejection when
+stale. Focus loss commits locally; only Update sends PUT.
 
 ## Confirmed row decisions
 
@@ -45,12 +45,12 @@ The shared period contract remains:
 2. `11:30` - editable input cells.
 3. `1:30` - editable input cells.
 4. `LIVE` - read-only.
-5. `Opps funding` - read-only.
+5. `Opps funding` - editable input cells.
 
 Unavailable values are explicit `0.00`. The provided PBIL references do not
 contain LIVE or Opps funding values, so the representative fixture initializes
-them to zero. The backend response remains authoritative when those values
-become available.
+them to zero. Opps funding can be entered by the operator; LIVE remains
+backend-authoritative and read-only.
 
 ## Provisional source allocations
 

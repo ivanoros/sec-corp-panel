@@ -19,6 +19,7 @@ describe('FundingAmountCellEditorComponent', () => {
       validateFundingCellInput(rawValue),
     ),
     cancelEdit: vi.fn(),
+    commitEdit: vi.fn(() => true),
     previewEdit: vi.fn((rawValue: string) => validateFundingCellInput(rawValue)),
   };
 
@@ -75,6 +76,19 @@ describe('FundingAmountCellEditorComponent', () => {
     ]);
   });
 
+  it('initializes the same editor for Opps funding', () => {
+    const fixture = TestBed.createComponent(FundingAmountCellEditorComponent);
+    fixture.componentInstance.agInit(createEditorParams(vi.fn(), 'opportunityFunding'));
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '.funding-amount-editor__input',
+    ) as HTMLInputElement;
+
+    expect(store.beginEdit).toHaveBeenCalledWith('occ', 'opportunityFunding', '-300000000.00');
+    expect(input.getAttribute('aria-label')).toBe('OCC Opps funding funding amount');
+  });
+
   it('cancels the preview and stops grid editing on Escape', () => {
     const stopEditing = vi.fn();
     const fixture = TestBed.createComponent(FundingAmountCellEditorComponent);
@@ -89,9 +103,46 @@ describe('FundingAmountCellEditorComponent', () => {
     expect(store.cancelEdit).toHaveBeenCalledOnce();
     expect(stopEditing).toHaveBeenCalledWith(true);
   });
+
+  it('commits the exact edited cell before Tab navigation starts the next editor', () => {
+    const fixture = TestBed.createComponent(FundingAmountCellEditorComponent);
+    fixture.componentInstance.agInit(createEditorParams());
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '.funding-amount-editor__input',
+    ) as HTMLInputElement;
+    input.value = '123';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+
+    expect(store.commitEdit).toHaveBeenCalledWith({
+      rowId: 'occ',
+      periodId: 'snapshot0830',
+    });
+  });
+
+  it('commits locally when focus leaves the editor', () => {
+    const fixture = TestBed.createComponent(FundingAmountCellEditorComponent);
+    fixture.componentInstance.agInit(createEditorParams());
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '.funding-amount-editor__input',
+    ) as HTMLInputElement;
+    input.dispatchEvent(new FocusEvent('blur'));
+
+    expect(store.commitEdit).toHaveBeenCalledWith({
+      rowId: 'occ',
+      periodId: 'snapshot0830',
+    });
+  });
 });
 
-function createEditorParams(stopEditing = vi.fn()): EditorParams {
+function createEditorParams(
+  stopEditing = vi.fn(),
+  periodId: 'snapshot0830' | 'opportunityFunding' = 'snapshot0830',
+): EditorParams {
   const viewModel = toFundingGridViewModel(createSecCorpReportFixture(), {}, null);
   const row = viewModel.rows.find(({ id }) => id === 'occ');
 
@@ -104,12 +155,12 @@ function createEditorParams(stopEditing = vi.fn()): EditorParams {
       stopEditing,
     },
     column: {
-      getColId: () => 'snapshot0830',
+      getColId: () => periodId,
     },
     data: row,
     eGridCell: document.createElement('div'),
     eventKey: null,
     onKeyDown: vi.fn(),
-    value: row.cells.snapshot0830,
+    value: row.cells[periodId],
   } as unknown as EditorParams;
 }

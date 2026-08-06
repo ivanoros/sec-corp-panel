@@ -10,12 +10,16 @@ import type { ElementRef } from '@angular/core';
 import type { ICellEditorAngularComp } from 'ag-grid-angular';
 import type { ICellEditorParams } from 'ag-grid-community';
 
-import { FundingPanelStateError, FundingPanelStore } from '../../application/funding-panel.store';
+import {
+  type FundingEditableCellAddress,
+  FundingPanelStateError,
+  FundingPanelStore,
+} from '../../application/funding-panel.store';
 import {
   validateFundingCellInput,
   type FundingCellValidation,
 } from '../../application/funding-cell-editor';
-import { isSnapshotPeriodId } from '../../domain/funding-report';
+import { isEditablePeriodId, type EditablePeriodId } from '../../domain/funding-report';
 import type { FundingGridCellViewModel, FundingGridRowViewModel } from '../funding-grid.viewmodel';
 
 type FundingAmountEditorParams = ICellEditorParams<
@@ -39,6 +43,7 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
 
   private params: FundingAmountEditorParams | null = null;
   private initialCell: FundingGridCellViewModel | null = null;
+  private cellAddress: FundingEditableCellAddress | null = null;
 
   readonly rawValue = signal('');
   readonly validation = signal<FundingCellValidation>(validateFundingCellInput('0.00'));
@@ -49,7 +54,7 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
   agInit(params: FundingAmountEditorParams): void {
     const periodId = params.column.getColId();
 
-    if (!isSnapshotPeriodId(periodId) || params.value === null || params.value === undefined) {
+    if (!isEditablePeriodId(periodId) || params.value === null || params.value === undefined) {
       throw new FundingPanelStateError(`Cannot edit ${params.data.id}.${periodId}.`);
     }
 
@@ -57,8 +62,9 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
 
     this.params = params;
     this.initialCell = params.value;
+    this.cellAddress = { periodId, rowId: params.data.id };
     this.rawValue.set(rawValue);
-    this.inputLabel.set(`${params.data.label} ${snapshotPeriodLabel(periodId)} funding amount`);
+    this.inputLabel.set(`${params.data.label} ${editablePeriodLabel(periodId)} funding amount`);
     this.editorWidth.set(Math.max(params.eGridCell.getBoundingClientRect().width, 128));
     this.validation.set(this.store.beginEdit(params.data.id, periodId, rawValue));
   }
@@ -124,17 +130,38 @@ export class FundingAmountCellEditorComponent implements ICellEditorAngularComp 
     this.validation.set(this.store.previewEdit(event.target.value));
   }
 
+  onBlur(): void {
+    this.commitCurrentCell();
+  }
+
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
       this.store.cancelEdit();
       this.params?.api.stopEditing(true);
+      return;
     }
+
+    if (event.key === 'Enter' || event.key === 'Tab') {
+      if (!this.commitCurrentCell()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+  }
+
+  destroy(): void {
+    this.commitCurrentCell();
+  }
+
+  private commitCurrentCell(): boolean {
+    const cellAddress = this.cellAddress;
+    return cellAddress === null ? true : this.store.commitEdit(cellAddress);
   }
 }
 
-function snapshotPeriodLabel(periodId: string): string {
+function editablePeriodLabel(periodId: EditablePeriodId): string {
   switch (periodId) {
     case 'snapshot0830':
       return '8:30';
@@ -142,9 +169,15 @@ function snapshotPeriodLabel(periodId: string): string {
       return '11:30';
     case 'snapshot1330':
       return '1:30';
+    case 'opportunityFunding':
+      return 'Opps funding';
     default:
-      throw new FundingPanelStateError(`Unknown snapshot period ${periodId}.`);
+      return assertNever(periodId);
   }
+}
+
+function assertNever(value: never): never {
+  throw new FundingPanelStateError(`Unknown editable period ${String(value)}.`);
 }
 
 function initialRawValue(

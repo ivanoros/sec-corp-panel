@@ -9,9 +9,11 @@ export const PERIOD_IDS = [
 ] as const;
 
 export const SNAPSHOT_PERIOD_IDS = ['snapshot0830', 'snapshot1130', 'snapshot1330'] as const;
+export const EDITABLE_PERIOD_IDS = [...SNAPSHOT_PERIOD_IDS, 'opportunityFunding'] as const;
 
 export type PeriodId = (typeof PERIOD_IDS)[number];
 export type SnapshotPeriodId = (typeof SNAPSHOT_PERIOD_IDS)[number];
+export type EditablePeriodId = (typeof EDITABLE_PERIOD_IDS)[number];
 export type PeriodKind = 'snapshot' | 'live' | 'opportunity';
 export type FundingRowKind =
   'opening-balance' | 'section' | 'detail' | 'subtotal' | 'closing-balance';
@@ -35,8 +37,6 @@ export interface SumCalculation {
 }
 
 export type FundingValueMap = Readonly<Record<PeriodId, DecimalString | null>>;
-
-export type SnapshotValueMap = Readonly<Record<SnapshotPeriodId, DecimalString>>;
 
 export interface FundingRow {
   readonly id: string;
@@ -67,40 +67,14 @@ export interface FundingReport {
 
 export interface SaveFundingReportCommand {
   readonly schemaVersion: 1;
-  readonly reportId: string;
-  readonly panelCode: string;
-  readonly businessDate: string;
   readonly expectedVersion: number;
-  readonly snapshotValues: Readonly<Record<string, SnapshotValueMap>>;
+  readonly report: FundingReport;
 }
 
 export function isSnapshotPeriodId(value: string): value is SnapshotPeriodId {
   return SNAPSHOT_PERIOD_IDS.some((periodId) => periodId === value);
 }
 
-export function selectSnapshotValues(
-  report: FundingReport,
-): Readonly<Record<string, SnapshotValueMap>> {
-  return Object.fromEntries(
-    report.rows
-      .filter((row) => row.valueMode === 'input')
-      .map((row) => [
-        row.id,
-        {
-          snapshot0830: requireDecimalValue(row, 'snapshot0830'),
-          snapshot1130: requireDecimalValue(row, 'snapshot1130'),
-          snapshot1330: requireDecimalValue(row, 'snapshot1330'),
-        },
-      ]),
-  );
-}
-
-function requireDecimalValue(row: FundingRow, periodId: SnapshotPeriodId): DecimalString {
-  const value = row.values[periodId];
-
-  if (value === null) {
-    throw new Error(`Input row ${row.id} has no value for ${periodId}.`);
-  }
-
-  return value;
+export function isEditablePeriodId(value: string): value is EditablePeriodId {
+  return EDITABLE_PERIOD_IDS.some((periodId) => periodId === value);
 }
