@@ -8,6 +8,7 @@
   "timezone": "America/New_York",
   "asOf": "2026-07-25T13:42:18-04:00",
   "version": 7,
+  "userId": "pbil-user",
   "permissions": {
     "canEdit": true,
     "canSave": true

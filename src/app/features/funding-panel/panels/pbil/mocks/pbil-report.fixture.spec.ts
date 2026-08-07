@@ -63,7 +63,7 @@ describe('PBIL report fixture', () => {
       throw new Error('Expected the fixture to be an object.');
     }
 
-    malformedFixture['version'] = 0;
+    malformedFixture['version'] = -1;
 
     expect(() => parseFundingReportResponse(malformedFixture)).toThrow(FundingPanelContractError);
   });

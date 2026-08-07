@@ -7,6 +7,7 @@ export interface RuntimeConfig {
   readonly apiBaseUrl: string;
   readonly businessDate: string;
   readonly fundingPanelDataSource: FundingPanelDataSource;
+  readonly userId: string;
 }
 
 declare global {
@@ -21,6 +22,7 @@ const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = Object.freeze({
   apiBaseUrl: '/api',
   businessDate: '2026-07-25',
   fundingPanelDataSource: 'mock',
+  userId: 'mock-user',
 });
 
 export const APP_RUNTIME_CONFIG = new InjectionToken<RuntimeConfig>('APP_RUNTIME_CONFIG');
@@ -41,6 +43,7 @@ export function readRuntimeConfig(
     fundingPanelDataSource:
       readFundingPanelDataSource(candidate['fundingPanelDataSource']) ??
       DEFAULT_RUNTIME_CONFIG.fundingPanelDataSource,
+    userId: readActualUserId(candidate['userId']) ?? DEFAULT_RUNTIME_CONFIG.userId,
   });
 }
 
@@ -59,6 +62,11 @@ function readOptionalNonEmptyString(value: unknown): string | null {
 
 function readFundingPanelDataSource(value: unknown): FundingPanelDataSource | null {
   return value === 'http' || value === 'mock' ? value : null;
+}
+
+function readActualUserId(value: unknown): string | null {
+  const userId = readOptionalNonEmptyString(value);
+  return userId !== null && userId !== 'system' && userId.length <= 128 ? userId : null;
 }
 
 function readIsoBusinessDate(value: unknown): string | null {

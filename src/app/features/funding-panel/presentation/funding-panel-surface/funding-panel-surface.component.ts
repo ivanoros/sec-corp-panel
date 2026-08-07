@@ -36,6 +36,7 @@ export class FundingPanelSurfaceComponent implements OnInit {
     this.store.load({
       panelCode: this.panelCode(),
       businessDate: this.runtimeConfig.businessDate,
+      userId: this.runtimeConfig.userId,
     });
   }
 

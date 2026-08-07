@@ -29,6 +29,7 @@ window.__FUNDING_PANEL_CONFIG__ = {
   agGridEnterpriseLicenseKey: '<injected by the deployment environment>',
   businessDate: '2026-07-28',
   fundingPanelDataSource: 'http',
+  userId: 'e70165',
 };
 ```
 
@@ -42,7 +43,8 @@ name because the application now hosts both Sec Corp and PBIL.
 `fundingPanelDataSource` must be `http` in an integrated environment. The
 self-contained default is `mock` with the representative `2026-07-25` business
 date so local development does not require a backend. The shell or deployment
-must inject the active ISO business date before the Angular bundle loads.
+must inject the active ISO business date and authenticated user's ID before the
+Angular bundle loads. The default mock user is `mock-user`.
 
 ## Panel routes
 

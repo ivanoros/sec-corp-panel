@@ -60,6 +60,7 @@ export interface FundingReport {
   readonly timezone: string;
   readonly asOf: string;
   readonly version: number;
+  readonly userId: string;
   readonly permissions: FundingReportPermissions;
   readonly periods: readonly ReportPeriod[];
   readonly rows: readonly FundingRow[];
@@ -68,6 +69,7 @@ export interface FundingReport {
 export interface SaveFundingReportCommand {
   readonly schemaVersion: 1;
   readonly expectedVersion: number;
+  readonly userId: string;
   readonly report: FundingReport;
 }
 

@@ -25,11 +25,14 @@ window.__SEC_CORP_PANEL_CONFIG__ = {
   agGridEnterpriseLicenseKey: '<runtime secret>',
   businessDate: '2026-07-28',
   fundingPanelDataSource: 'http',
+  userId: 'e70165',
 };
 ```
 
 `businessDate` must be a real ISO calendar date. Impossible or ambiguous dates
-are rejected. `fundingPanelDataSource` accepts only `http` or `mock`.
+are rejected. `fundingPanelDataSource` accepts only `http` or `mock`. `userId`
+is the authenticated request actor supplied by the shell. It is sent on both
+GET and PUT and must be verified against the backend authentication context.
 
 The self-contained defaults remain `mock` and `2026-07-25`, matching the
 representative fixture. An integrated environment must explicitly set `http`
@@ -51,12 +54,15 @@ does not introduce environment checks into business or presentation logic.
 
 The HTTP mode preserves the approved concurrency contract:
 
-1. GET returns a complete report and positive `version`.
-2. PUT sends the complete edited report dataset.
-3. `expectedVersion` is present in the JSON body.
-4. `If-Match` contains the same quoted version.
-5. `409` or `412` becomes `FundingPanelVersionConflictError`.
-6. The store retains dirty edits and blocks refresh until the user resolves the
+1. GET sends the current request `userId` and returns a complete report with a
+   nonnegative `version` and last-updater `userId`.
+2. A version-0 report has `userId: "system"`; every later version identifies the
+   actual user who last updated it.
+3. PUT sends the complete edited report dataset and current actor `userId`.
+4. `expectedVersion` is present in the JSON body.
+5. `If-Match` contains the same quoted version.
+6. `409` or `412` becomes `FundingPanelVersionConflictError`.
+7. The store retains dirty edits and blocks refresh until the user resolves the
    conflict.
 
 The backend remains responsible for the atomic compare, update, version
@@ -66,7 +72,7 @@ increment, authoritative recalculation, and complete response.
 
 The shell adapter's revision signal is the only automatic trigger observed by
 the store. When the shell requests refresh, the store repeats the original
-`panelCode` and `businessDate`.
+`panelCode`, `businessDate`, and `userId`.
 
 Clean panels refresh immediately. Dirty panels require explicit discard
 confirmation before GET. Invalid edits, in-flight updates, and version conflicts

@@ -4,7 +4,7 @@ import type { Observable } from 'rxjs';
 import type { FundingReport, SaveFundingReportCommand } from '../domain/funding-report';
 
 export interface FundingPanelGateway {
-  getReport(panelCode: string, businessDate: string): Observable<FundingReport>;
+  getReport(panelCode: string, businessDate: string, userId: string): Observable<FundingReport>;
   putReport(command: SaveFundingReportCommand): Observable<FundingReport>;
 }
 

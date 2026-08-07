@@ -44,7 +44,7 @@ describe('FundingPanelStore', () => {
     gateway = TestBed.inject(ControllableFundingPanelGateway);
     host = TestBed.inject(StandalonePanelHostAdapter);
     store = TestBed.inject(FundingPanelStore);
-    store.load({ panelCode: 'sec-corp', businessDate: '2026-07-25' });
+    store.load({ panelCode: 'sec-corp', businessDate: '2026-07-25', userId: 'e70165' });
     gateway.resolveGet(createSecCorpReportFixture());
   });
 
@@ -65,6 +65,7 @@ describe('FundingPanelStore', () => {
 
     expect(store.updateReport()).toBe(true);
     expect(gateway.putCommands).toHaveLength(1);
+    expect(gateway.putCommands[0]?.userId).toBe('e70165');
     expect(store.saveStatus()).toBe('saving');
   });
 
@@ -225,8 +226,8 @@ describe('FundingPanelStore', () => {
 
     await vi.waitFor(() => {
       expect(gateway.getCalls).toEqual([
-        { panelCode: 'sec-corp', businessDate: '2026-07-25' },
-        { panelCode: 'sec-corp', businessDate: '2026-07-25' },
+        { panelCode: 'sec-corp', businessDate: '2026-07-25', userId: 'e70165' },
+        { panelCode: 'sec-corp', businessDate: '2026-07-25', userId: 'e70165' },
       ]);
     });
   });
@@ -266,6 +267,7 @@ describe('FundingPanelStore', () => {
     expect(gateway.getCalls[2]).toEqual({
       panelCode: 'sec-corp',
       businessDate: '2026-07-25',
+      userId: 'e70165',
     });
 
     gateway.resolveGet(createSecCorpReportFixture());
@@ -305,9 +307,9 @@ class ControllableFundingPanelGateway implements FundingPanelGateway {
   private readonly getResponses: Subject<FundingReport>[] = [];
   private readonly putResponses: Subject<FundingReport>[] = [];
 
-  getReport(panelCode: string, businessDate: string): Observable<FundingReport> {
+  getReport(panelCode: string, businessDate: string, userId: string): Observable<FundingReport> {
     const response = new Subject<FundingReport>();
-    this.getCalls.push({ panelCode, businessDate });
+    this.getCalls.push({ panelCode, businessDate, userId });
     this.getResponses.push(response);
     return response;
   }
@@ -343,6 +345,7 @@ class ControllableFundingPanelGateway implements FundingPanelGateway {
 interface FundingReportQueryCall {
   readonly businessDate: string;
   readonly panelCode: string;
+  readonly userId: string;
 }
 
 async function waitForReady(store: FundingPanelStore): Promise<void> {
@@ -363,6 +366,7 @@ function savedReport(
     ...command.report,
     asOf: `2026-07-25T14:00:${String(version).padStart(2, '0')}-04:00`,
     version,
+    userId: command.userId,
   });
 }
 

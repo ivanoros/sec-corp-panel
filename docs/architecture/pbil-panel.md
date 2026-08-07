@@ -15,13 +15,13 @@ reuses:
 The PBIL route is `/pbil`. The production REST resources are:
 
 ```text
-GET /api/v1/funding-panels/pbil?businessDate=YYYY-MM-DD
+GET /api/v1/funding-panels/pbil?businessDate=YYYY-MM-DD&userId=USER_ID
 PUT /api/v1/funding-panels/pbil/{reportId}
 ```
 
-The PUT contract sends the complete report dataset, `expectedVersion` in the
-body, the same quoted value in `If-Match`, and atomic 409/412 rejection when
-stale. Focus loss commits locally; only Update sends PUT.
+The PUT contract sends the complete report dataset, current actor `userId`, and
+`expectedVersion` in the body, the same quoted version in `If-Match`, and atomic
+409/412 rejection when stale. Focus loss commits locally; only Update sends PUT.
 
 ## Confirmed row decisions
 

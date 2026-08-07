@@ -19,8 +19,24 @@ export function validateFundingReport(report: FundingReport): readonly FundingCo
   const rowsById = new Map(report.rows.map((row) => [row.id, row]));
   const displayOrders = new Set<number>();
 
-  if (!Number.isSafeInteger(report.version) || report.version < 1) {
-    issues.push(issue('INVALID_VERSION', 'version', 'Version must be a positive integer.'));
+  if (!Number.isSafeInteger(report.version) || report.version < 0) {
+    issues.push(issue('INVALID_VERSION', 'version', 'Version must be a non-negative integer.'));
+  }
+
+  if (report.userId.trim().length === 0 || report.userId.length > 128) {
+    issues.push(issue('INVALID_USER_ID', 'userId', 'userId must contain 1 to 128 characters.'));
+  } else if (report.version === 0 && report.userId !== 'system') {
+    issues.push(
+      issue('INVALID_INITIAL_USER_ID', 'userId', 'A version-0 report must be owned by system.'),
+    );
+  } else if (report.version > 0 && report.userId === 'system') {
+    issues.push(
+      issue(
+        'INVALID_UPDATED_USER_ID',
+        'userId',
+        'A report above version 0 must identify the user who made the update.',
+      ),
+    );
   }
 
   for (const [periodIndex, period] of report.periods.entries()) {

@@ -14,8 +14,10 @@ import { FUNDING_PANEL_MOCK_REPORT } from './funding-panel-mock-report';
 export class MockFundingPanelGateway implements FundingPanelGateway {
   private currentReport = structuredClone(inject(FUNDING_PANEL_MOCK_REPORT));
 
-  getReport(panelCode: string, businessDate: string): Observable<FundingReport> {
+  getReport(panelCode: string, businessDate: string, userId: string): Observable<FundingReport> {
     return defer(() => {
+      assertActualUserId(userId);
+
       if (
         panelCode !== this.currentReport.panelCode ||
         businessDate !== this.currentReport.businessDate
@@ -49,11 +51,13 @@ export class MockFundingPanelGateway implements FundingPanelGateway {
       }
 
       assertValidFundingReport(command.report);
+      assertActualUserId(command.userId);
 
       const nextReport = recalculateFundingReport({
         ...structuredClone(command.report),
         asOf: new Date().toISOString(),
         version: this.currentReport.version + 1,
+        userId: command.userId,
       });
 
       assertValidFundingReport(nextReport);
@@ -74,6 +78,18 @@ export class MockFundingPanelGateway implements FundingPanelGateway {
         command.report.businessDate,
       );
     }
+  }
+}
+
+function assertActualUserId(userId: string): void {
+  if (userId.trim().length === 0 || userId.length > 128 || userId === 'system') {
+    throw new FundingPanelContractError([
+      {
+        code: 'INVALID_REQUEST_USER_ID',
+        path: 'userId',
+        message: 'Request userId must identify an actual user.',
+      },
+    ]);
   }
 }
 

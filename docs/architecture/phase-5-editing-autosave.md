@@ -78,5 +78,6 @@ No additional AG Grid modules are registered. The existing client-side row
 model and runtime Enterprise license setup are sufficient.
 
 The REST contract sends the complete report dataset only when Update is
-selected. The body contains `expectedVersion` and the full report; `If-Match`
-contains the same quoted version.
+selected. The body contains the current actor `userId`, `expectedVersion`, and
+the full report; `If-Match` contains the same quoted version. The server returns
+the incremented report version with its audit `userId` set to that actor.

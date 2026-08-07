@@ -13,7 +13,8 @@ into one another.
 
 The store keeps three deliberately separate representations:
 
-1. `serverReport` is the latest complete report confirmed by GET or PUT.
+1. `serverReport` is the latest complete report confirmed by GET or PUT,
+   including the version and last-updater `userId`.
 2. `edits` is a sparse immutable overlay containing committed, unsaved snapshot
    cells.
 3. `activeEdit` is the cell editor's current raw and validated value.
@@ -32,7 +33,8 @@ not lost focus yet.
 
 ## Edit and explicit update sequence
 
-1. The editor begins on an input row in `8:30`, `11:30`, or `1:30`.
+1. The editor begins on an input row in `8:30`, `11:30`, `1:30`, or
+   `Opps funding`.
 2. Every valid keystroke updates the computed preview and dependent totals.
 3. Lost focus, Enter, or Tab will call `commitEdit` in the grid phase.
 4. A valid commit moves the value to the edit overlay. It does not call the API.
@@ -52,7 +54,10 @@ two-decimal string required by the REST contract.
 ## Explicit and serialized updates
 
 Only one PUT can be in flight for a store. Each Update captures the complete
-preview report dataset and the current confirmed version.
+preview report dataset, current confirmed version, and current request actor
+`userId`. The query state contains panel code, business date, and current user;
+the report's separate `userId` remains the previous successful updater until the
+server accepts the save.
 
 Edits made while that PUT is pending remain in the overlay. When the response
 arrives, the overlay is rebased against the authoritative returned report:

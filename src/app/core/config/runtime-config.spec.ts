@@ -12,6 +12,7 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/api',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'mock',
+      userId: 'mock-user',
     });
   });
 
@@ -22,12 +23,14 @@ describe('readRuntimeConfig', () => {
         apiBaseUrl: ' /funding-api ',
         businessDate: '2026-07-28',
         fundingPanelDataSource: 'http',
+        userId: ' e70165 ',
       }),
     ).toEqual({
       agGridEnterpriseLicenseKey: 'enterprise-license',
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      userId: 'e70165',
     });
   });
 
@@ -36,12 +39,14 @@ describe('readRuntimeConfig', () => {
       readRuntimeConfig({
         businessDate: '2026-02-30',
         fundingPanelDataSource: 'network',
+        userId: 'system',
       }),
     ).toEqual({
       agGridEnterpriseLicenseKey: null,
       apiBaseUrl: '/api',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'mock',
+      userId: 'mock-user',
     });
   });
 
@@ -53,6 +58,7 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      userId: 'mock-user',
     };
 
     expect(readRuntimeConfig()).toEqual({
@@ -60,6 +66,7 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      userId: 'mock-user',
     });
 
     delete window.__FUNDING_PANEL_CONFIG__;

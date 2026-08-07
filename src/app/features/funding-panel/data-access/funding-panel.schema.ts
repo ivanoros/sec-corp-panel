@@ -4,6 +4,10 @@ import { PERIOD_IDS } from '../domain/funding-report';
 
 const canonicalDecimalSchema = z.string().regex(/^-?(?:0|[1-9]\d*)\.\d{2}$/);
 const identifierSchema = z.string().trim().min(1).max(120);
+const userIdSchema = z.string().trim().min(1).max(128);
+export const requestUserIdSchema = userIdSchema.refine((userId) => userId !== 'system', {
+  message: 'Update userId must identify an actual user.',
+});
 const businessDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -61,7 +65,8 @@ export const fundingReportSchema = z
     currency: z.string().regex(/^[A-Z]{3}$/),
     timezone: z.string().trim().min(1).max(80),
     asOf: z.iso.datetime({ offset: true }),
-    version: z.number().int().positive(),
+    version: z.number().int().nonnegative(),
+    userId: userIdSchema,
     permissions: z
       .object({
         canEdit: z.boolean(),
@@ -71,12 +76,30 @@ export const fundingReportSchema = z
     periods: z.array(periodSchema).length(PERIOD_IDS.length),
     rows: z.array(fundingRowSchema).min(1).max(500),
   })
-  .strict();
+  .strict()
+  .superRefine(({ version, userId }, context) => {
+    if (version === 0 && userId !== 'system') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A version-0 report must be owned by system.',
+        path: ['userId'],
+      });
+    }
+
+    if (version > 0 && userId === 'system') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A versioned report must identify the actual user who last updated it.',
+        path: ['userId'],
+      });
+    }
+  });
 
 export const saveFundingReportRequestSchema = z
   .object({
     schemaVersion: z.literal(1),
-    expectedVersion: z.number().int().positive(),
+    expectedVersion: z.number().int().nonnegative(),
+    userId: requestUserIdSchema,
     report: fundingReportSchema,
   })
   .strict()
@@ -94,8 +117,8 @@ export const versionConflictResponseSchema = z
   .object({
     code: z.literal('VERSION_CONFLICT'),
     message: z.string().trim().min(1),
-    expectedVersion: z.number().int().positive(),
-    currentVersion: z.number().int().positive(),
+    expectedVersion: z.number().int().nonnegative(),
+    currentVersion: z.number().int().nonnegative(),
   })
   .strict();
 

@@ -10,6 +10,7 @@ import {
   FundingPanelVersionConflictError,
 } from './funding-panel.gateway';
 import {
+  requestUserIdSchema,
   saveFundingReportRequestSchema,
   versionConflictResponseSchema,
 } from './funding-panel.schema';
@@ -23,12 +24,13 @@ export class HttpFundingPanelGateway implements FundingPanelGateway {
     this.runtimeConfig.apiBaseUrl,
   )}/v1/funding-panels`;
 
-  getReport(panelCode: string, businessDate: string): Observable<FundingReport> {
+  getReport(panelCode: string, businessDate: string, userId: string): Observable<FundingReport> {
     const url = `${this.resourceBaseUrl}/${encodeURIComponent(panelCode)}`;
+    const requestUserId = requestUserIdSchema.parse(userId);
 
     return this.http
       .get<unknown>(url, {
-        params: { businessDate },
+        params: { businessDate, userId: requestUserId },
       })
       .pipe(map((response) => parseFundingReportResponse(response)));
   }
@@ -69,6 +71,7 @@ function toRequestDto(command: SaveFundingReportCommand): SaveFundingReportReque
   return saveFundingReportRequestSchema.parse({
     schemaVersion: command.schemaVersion,
     expectedVersion: command.expectedVersion,
+    userId: command.userId,
     report: command.report,
   });
 }

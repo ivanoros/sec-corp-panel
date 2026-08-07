@@ -16,6 +16,7 @@ describe('SecCorpPanelComponent', () => {
             apiBaseUrl: '/api',
             businessDate: '2026-07-25',
             fundingPanelDataSource: 'mock',
+            userId: 'sec-corp-test-user',
           },
         },
       ],

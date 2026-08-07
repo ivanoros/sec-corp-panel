@@ -19,6 +19,7 @@ describe('HttpFundingPanelGateway', () => {
       apiBaseUrl: '/funding-api/',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'http',
+      userId: 'e70165',
     };
 
     TestBed.configureTestingModule({
@@ -43,9 +44,9 @@ describe('HttpFundingPanelGateway', () => {
 
   it('retrieves and validates the report contract', async () => {
     const report = createSecCorpReportFixture();
-    const result = firstValueFrom(gateway.getReport('sec-corp', '2026-07-25'));
+    const result = firstValueFrom(gateway.getReport('sec-corp', '2026-07-25', 'e70165'));
     const request = httpTesting.expectOne(
-      '/funding-api/v1/funding-panels/sec-corp?businessDate=2026-07-25',
+      '/funding-api/v1/funding-panels/sec-corp?businessDate=2026-07-25&userId=e70165',
     );
 
     expect(request.request.method).toBe('GET');
@@ -54,11 +55,16 @@ describe('HttpFundingPanelGateway', () => {
     await expect(result).resolves.toEqual(report);
   });
 
+  it('rejects system as a retrieval request actor', () => {
+    expect(() => gateway.getReport('sec-corp', '2026-07-25', 'system')).toThrow();
+  });
+
   it('sends the complete report dataset in a versioned PUT replacement', async () => {
     const report = createSecCorpReportFixture();
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
       expectedVersion: report.version,
+      userId: 'e70165',
       report,
     };
     const result = firstValueFrom(gateway.putReport(command));
@@ -71,17 +77,20 @@ describe('HttpFundingPanelGateway', () => {
     expect(request.request.body).toEqual({
       schemaVersion: 1,
       expectedVersion: 17,
+      userId: 'e70165',
       report,
     });
 
     request.flush({
       ...report,
       version: 18,
+      userId: 'e70165',
     });
 
     await expect(result).resolves.toEqual({
       ...report,
       version: 18,
+      userId: 'e70165',
     });
   });
 
@@ -90,6 +99,7 @@ describe('HttpFundingPanelGateway', () => {
     const command: SaveFundingReportCommand = {
       schemaVersion: 1,
       expectedVersion: report.version,
+      userId: 'e70165',
       report,
     };
     const result = firstValueFrom(gateway.putReport(command));

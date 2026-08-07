@@ -19,6 +19,7 @@ describe('PbilPanelComponent', () => {
             apiBaseUrl: '/api',
             businessDate: '2026-07-25',
             fundingPanelDataSource: 'mock',
+            userId: 'pbil-test-user',
           },
         },
       ],
@@ -114,6 +115,7 @@ describe('PbilPanelComponent', () => {
     const externalUpdate: SaveFundingReportCommand = {
       schemaVersion: 1,
       expectedVersion: screenReport.version,
+      userId: 'external-user',
       report: screenReport,
     };
     const externallySavedReport = await firstValueFrom(gateway.putReport(externalUpdate));
@@ -163,6 +165,7 @@ describe('PbilPanelComponent', () => {
       gateway.putReport({
         schemaVersion: 1,
         expectedVersion: screenReport.version,
+        userId: 'external-user',
         report: screenReport,
       }),
     );

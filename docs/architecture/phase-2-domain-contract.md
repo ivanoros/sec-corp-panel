@@ -51,13 +51,18 @@ End of Day.
 ## Retrieve
 
 ```http
-GET /api/v1/funding-panels/sec-corp?businessDate=2026-07-25
+GET /api/v1/funding-panels/sec-corp?businessDate=2026-07-25&userId=e70165
 ```
 
 The response is validated at runtime before it enters the domain. It includes
-`version`, permissions, period metadata, ordered rows, and authoritative
+`version`, `userId`, permissions, period metadata, ordered rows, and authoritative
 calculated values. The representative Sec Corp fixture contains 37 rows; the
 shared contract does not impose that fixture-specific count on future panels.
+
+The query `userId` identifies the authenticated user making the retrieval. In
+the returned report, `userId` is audit metadata for the last successful update:
+it is exactly `system` while `version` is `0`, and the actual updater's ID for
+every later version.
 
 ## Save
 
@@ -71,6 +76,7 @@ Content-Type: application/json
 {
   "schemaVersion": 1,
   "expectedVersion": 17,
+  "userId": "e70165",
   "report": {
     "schemaVersion": 1,
     "reportId": "sec-corp-2026-07-25",
@@ -81,6 +87,7 @@ Content-Type: application/json
     "timezone": "America/New_York",
     "asOf": "2026-07-25T13:42:18-04:00",
     "version": 17,
+    "userId": "previous-user",
     "permissions": { "canEdit": true, "canSave": true },
     "periods": ["all five period objects from GET"],
     "rows": ["all row objects, values, and calculations from the edited report"]
@@ -93,8 +100,23 @@ the complete report dataset: metadata, permissions, all five period definitions,
 every row, every period value, and every calculation definition. The database
 compares `expectedVersion` atomically, validates the report identity, persists
 the allowed input values, increments the version, recalculates authoritative
-totals, and returns the complete report. The backend must not trust client-sent
+totals, sets the returned report's `userId` to the request actor, and returns the
+complete report. The top-level `userId` identifies the current update actor;
+`report.userId` describes the last accepted version and therefore is not changed
+locally before the save succeeds. The backend must verify the supplied request
+actor against the authenticated principal and must not trust client-sent
 calculated values or server-owned metadata without validation.
+
+The first system-created dataset and its first successful user update transition
+as follows:
+
+```json
+{
+  "before": { "version": 0, "userId": "system" },
+  "updateActor": "e70165",
+  "after": { "version": 1, "userId": "e70165" }
+}
+```
 
 Stale saves return:
 

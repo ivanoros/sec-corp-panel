@@ -18,6 +18,7 @@ describe('AppComponent', () => {
             apiBaseUrl: '/api',
             businessDate: '2026-07-25',
             fundingPanelDataSource: 'mock',
+            userId: 'test-user',
           },
         },
       ],

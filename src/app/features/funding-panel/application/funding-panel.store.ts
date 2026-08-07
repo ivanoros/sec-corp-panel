@@ -26,6 +26,7 @@ export type FundingLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 export interface FundingReportQuery {
   readonly businessDate: string;
   readonly panelCode: string;
+  readonly userId: string;
 }
 
 export interface FundingVersionConflict {
@@ -270,15 +271,16 @@ export class FundingPanelStore {
     }
 
     const report = this.report();
+    const query = this.queryState();
 
-    if (report === null) {
+    if (report === null || query === null) {
       return false;
     }
 
     this.updateRequestActive = true;
     this.saveStatusState.set('saving');
     this.errorMessageState.set(null);
-    void this.performUpdate(report);
+    void this.performUpdate(report, query.userId);
     return true;
   }
 
@@ -336,7 +338,7 @@ export class FundingPanelStore {
     try {
       const report = await firstValueFrom(
         this.gateway
-          .getReport(query.panelCode, query.businessDate)
+          .getReport(query.panelCode, query.businessDate, query.userId)
           .pipe(takeUntilDestroyed(this.destroyRef)),
       );
 
@@ -361,10 +363,12 @@ export class FundingPanelStore {
     }
   }
 
-  private async performUpdate(report: FundingReport): Promise<void> {
+  private async performUpdate(report: FundingReport, userId: string): Promise<void> {
     try {
       const savedReport = await firstValueFrom(
-        this.gateway.putReport(toSaveCommand(report)).pipe(takeUntilDestroyed(this.destroyRef)),
+        this.gateway
+          .putReport(toSaveCommand(report, userId))
+          .pipe(takeUntilDestroyed(this.destroyRef)),
       );
 
       if (this.destroyed) {
@@ -430,10 +434,11 @@ function buildPreviewReport(
   });
 }
 
-function toSaveCommand(report: FundingReport): SaveFundingReportCommand {
+function toSaveCommand(report: FundingReport, userId: string): SaveFundingReportCommand {
   return {
     schemaVersion: 1,
     expectedVersion: report.version,
+    userId,
     report,
   };
 }
