@@ -18,7 +18,7 @@ describe('toFundingGridViewModel', () => {
       },
     );
     const occ = requireRow(viewModel.rows, 'occ');
-    const totalMargin = requireRow(viewModel.rows, 'total-margin');
+    const totalMargin = requireRow(viewModel.rows, 'totalMargin');
 
     expect(occ.cells.snapshot0830).toMatchObject({
       dirty: true,

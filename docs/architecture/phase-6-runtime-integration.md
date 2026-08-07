@@ -54,19 +54,23 @@ does not introduce environment checks into business or presentation logic.
 
 The HTTP mode preserves the approved concurrency contract:
 
-1. GET sends the current request `userId` and returns a complete report with a
-   nonnegative `version` and last-updater `userId`.
+1. GET sends the current request `userId` and returns compact version 2 backend
+   facts with a nonnegative `version`, `definitionVersion`, and last-updater
+   `userId`.
 2. A version-0 report has `userId: "system"`; every later version identifies the
    actual user who last updated it.
-3. PUT sends the complete edited report dataset and current actor `userId`.
+3. PUT sends the complete edited value matrix and backend-owned metadata, but no
+   presentation definitions, plus the current actor `userId`.
 4. `expectedVersion` is present in the JSON body.
 5. `If-Match` contains the same quoted version.
 6. `409` or `412` becomes `FundingPanelVersionConflictError`.
 7. The store retains dirty edits and blocks refresh until the user resolves the
    conflict.
 
-The backend remains responsible for the atomic compare, update, version
-increment, authoritative recalculation, and complete response.
+The HTTP mapper joins GET/PUT responses with the injected panel definition to
+produce the existing row-oriented domain report. The backend remains responsible
+for the atomic compare, update, version increment, authoritative recalculation,
+and complete compact response.
 
 ## Shell refresh
 

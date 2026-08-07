@@ -6,7 +6,10 @@ import { firstValueFrom } from 'rxjs';
 import { APP_RUNTIME_CONFIG, type RuntimeConfig } from '../../../core/config/runtime-config';
 import type { SaveFundingReportCommand } from '../domain/funding-report';
 import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
+import { SEC_CORP_PANEL_DEFINITION } from '../panels/sec-corp/sec-corp-panel.definition';
+import { provideFundingPanelDefinition } from './funding-panel-definition.provider';
 import type { FundingPanelVersionConflictError } from './funding-panel.gateway';
+import { serializeFundingReportResponse } from './funding-report.mapper';
 import { HttpFundingPanelGateway } from './http-funding-panel.gateway';
 
 describe('HttpFundingPanelGateway', () => {
@@ -27,6 +30,7 @@ describe('HttpFundingPanelGateway', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         HttpFundingPanelGateway,
+        provideFundingPanelDefinition(SEC_CORP_PANEL_DEFINITION),
         {
           provide: APP_RUNTIME_CONFIG,
           useValue: runtimeConfig,
@@ -50,7 +54,7 @@ describe('HttpFundingPanelGateway', () => {
     );
 
     expect(request.request.method).toBe('GET');
-    request.flush(report);
+    request.flush(serializeFundingReportResponse(report, SEC_CORP_PANEL_DEFINITION));
 
     await expect(result).resolves.toEqual(report);
   });
@@ -74,18 +78,39 @@ describe('HttpFundingPanelGateway', () => {
 
     expect(request.request.method).toBe('PUT');
     expect(request.request.headers.get('If-Match')).toBe('"17"');
-    expect(request.request.body).toEqual({
-      schemaVersion: 1,
+    expect(request.request.body).toMatchObject({
+      schemaVersion: 2,
+      definitionVersion: 1,
       expectedVersion: 17,
       userId: 'e70165',
-      report,
+      report: {
+        reportId: report.reportId,
+        panelCode: 'sec-corp',
+        version: 17,
+      },
     });
+    expect(request.request.body).not.toHaveProperty('report.title');
+    expect(request.request.body).not.toHaveProperty('report.rows');
+    expect(request.request.body).not.toHaveProperty('report.periods');
+    expect(request.request.body.report.columns).toHaveLength(5);
+    expect(request.request.body.report.columns[0]).toEqual(
+      expect.objectContaining({
+        snapshotId: 'snapshot0830',
+        arbMtmWires: '0.00',
+        totalMargin: '-219227849.12',
+      }),
+    );
 
-    request.flush({
-      ...report,
-      version: 18,
-      userId: 'e70165',
-    });
+    request.flush(
+      serializeFundingReportResponse(
+        {
+          ...report,
+          version: 18,
+          userId: 'e70165',
+        },
+        SEC_CORP_PANEL_DEFINITION,
+      ),
+    );
 
     await expect(result).resolves.toEqual({
       ...report,

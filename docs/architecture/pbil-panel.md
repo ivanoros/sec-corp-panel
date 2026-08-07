@@ -19,9 +19,11 @@ GET /api/v1/funding-panels/pbil?businessDate=YYYY-MM-DD&userId=USER_ID
 PUT /api/v1/funding-panels/pbil/{reportId}
 ```
 
-The PUT contract sends the complete report dataset, current actor `userId`, and
-`expectedVersion` in the body, the same quoted version in `If-Match`, and atomic
-409/412 rejection when stale. Focus loss commits locally; only Update sends PUT.
+The version 2 PUT contract sends all PBIL column IDs, row IDs, values, backend
+metadata, current actor `userId`, and `expectedVersion`. Labels, ordering,
+hierarchy, and calculations come from `PBIL_PANEL_DEFINITION` and are not sent to
+the service. `If-Match` carries the same quoted version, with atomic 409/412
+rejection when stale. Focus loss commits locally; only Update sends PUT.
 
 ## Confirmed row decisions
 
@@ -95,6 +97,7 @@ docked panel's mock version state isolated.
 Final source allocation changes should update only:
 
 - `pbil-row-catalog.ts` source metadata and assumptions;
+- `pbil-panel.definition.ts` when hierarchy or calculations change;
 - `pbil-report.fixture.json` representative values;
 - PBIL fixture expectations.
 

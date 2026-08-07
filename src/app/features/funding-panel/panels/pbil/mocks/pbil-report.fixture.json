@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "definitionVersion": 1,
   "reportId": "pbil-2026-07-25",
   "panelCode": "pbil",
-  "title": "PBIL",
   "businessDate": "2026-07-25",
   "currency": "USD",
   "timezone": "America/New_York",
@@ -13,520 +13,121 @@
     "canEdit": true,
     "canSave": true
   },
-  "periods": [
+  "columns": [
     {
-      "id": "snapshot0830",
-      "label": "8:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot0830",
+      "sodBalance": "7921000000.00",
+      "arrangedFunding": "1145000000.00",
+      "slabActivity2884": "100000000.00",
+      "slabActivity2147": "0.00",
+      "arbMtmWires": "0.00",
+      "failsMargin11602149": "59000000.00",
+      "margin58010500": "215000000.00",
+      "pbilArbMargin": "-835000000.00",
+      "marginFacilityProjected": "0.00",
+      "creditPrimeRepoActivity": "0.00",
+      "clientActivityCashWires": "0.00",
+      "15c3Withdrawal": "0.00",
+      "fxSwaps": "0.00",
+      "als": "0.00",
+      "financingDis": "0.00",
+      "usTreasuryRepoPnv": "500000000.00",
+      "equityJpm": "0.00",
+      "equityDis": "600000000.00",
+      "equityE87": "0.00",
+      "endOfDay": "9705000000.00"
     },
     {
-      "id": "snapshot1130",
-      "label": "11:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot1130",
+      "sodBalance": "7921000000.00",
+      "arrangedFunding": "1145000000.00",
+      "slabActivity2884": "100000000.00",
+      "slabActivity2147": "0.00",
+      "arbMtmWires": "0.00",
+      "failsMargin11602149": "59000000.00",
+      "margin58010500": "215000000.00",
+      "pbilArbMargin": "-1042000000.00",
+      "marginFacilityProjected": "0.00",
+      "creditPrimeRepoActivity": "0.00",
+      "clientActivityCashWires": "0.00",
+      "15c3Withdrawal": "0.00",
+      "fxSwaps": "-140000000.00",
+      "als": "0.00",
+      "financingDis": "0.00",
+      "usTreasuryRepoPnv": "500000000.00",
+      "equityJpm": "0.00",
+      "equityDis": "600000000.00",
+      "equityE87": "0.00",
+      "endOfDay": "9358000000.00"
     },
     {
-      "id": "snapshot1330",
-      "label": "1:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot1330",
+      "sodBalance": "7921000000.00",
+      "arrangedFunding": "1145000000.00",
+      "slabActivity2884": "100000000.00",
+      "slabActivity2147": "0.00",
+      "arbMtmWires": "0.00",
+      "failsMargin11602149": "59000000.00",
+      "margin58010500": "215000000.00",
+      "pbilArbMargin": "-1042000000.00",
+      "marginFacilityProjected": "0.00",
+      "creditPrimeRepoActivity": "0.00",
+      "clientActivityCashWires": "0.00",
+      "15c3Withdrawal": "0.00",
+      "fxSwaps": "-140000000.00",
+      "als": "0.00",
+      "financingDis": "0.00",
+      "usTreasuryRepoPnv": "500000000.00",
+      "equityJpm": "0.00",
+      "equityDis": "300000000.00",
+      "equityE87": "0.00",
+      "endOfDay": "9058000000.00"
     },
     {
-      "id": "live",
-      "label": "LIVE",
-      "kind": "live",
-      "editable": false
+      "snapshotId": "live",
+      "sodBalance": "0.00",
+      "arrangedFunding": "0.00",
+      "slabActivity2884": "0.00",
+      "slabActivity2147": "0.00",
+      "arbMtmWires": "0.00",
+      "failsMargin11602149": "0.00",
+      "margin58010500": "0.00",
+      "pbilArbMargin": "0.00",
+      "marginFacilityProjected": "0.00",
+      "creditPrimeRepoActivity": "0.00",
+      "clientActivityCashWires": "0.00",
+      "15c3Withdrawal": "0.00",
+      "fxSwaps": "0.00",
+      "als": "0.00",
+      "financingDis": "0.00",
+      "usTreasuryRepoPnv": "0.00",
+      "equityJpm": "0.00",
+      "equityDis": "0.00",
+      "equityE87": "0.00",
+      "endOfDay": "0.00"
     },
     {
-      "id": "opportunityFunding",
-      "label": "Opps funding",
-      "kind": "opportunity",
-      "editable": true
-    }
-  ],
-  "rows": [
-    {
-      "id": "sod-balance",
-      "code": "SOD_BALANCE",
-      "label": "SOD Balance",
-      "displayOrder": 10,
-      "depth": 0,
-      "kind": "opening-balance",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "7921000000.00",
-        "snapshot1130": "7921000000.00",
-        "snapshot1330": "7921000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "settlement-activity-dtc",
-      "code": "SETTLEMENT_ACTIVITY_DTC",
-      "label": "Settlement activity (DTC)",
-      "displayOrder": 20,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "arranged-funding",
-      "code": "ARRANGED_FUNDING",
-      "label": "Arranged funding",
-      "displayOrder": 30,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "1145000000.00",
-        "snapshot1130": "1145000000.00",
-        "snapshot1330": "1145000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "slab-activity-2884",
-      "code": "SLAB_ACTIVITY_2884",
-      "label": "Slab activity (2884)",
-      "displayOrder": 40,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "100000000.00",
-        "snapshot1130": "100000000.00",
-        "snapshot1330": "100000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "slab-activity-2147",
-      "code": "SLAB_ACTIVITY_2147",
-      "label": "Slab activity (2147)",
-      "displayOrder": 50,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "margin",
-      "code": "MARGIN",
-      "label": "Margin",
-      "displayOrder": 60,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "arb-mtm-wires",
-      "code": "ARB_MTM_WIRES",
-      "label": "Arb MtM Wires",
-      "displayOrder": 70,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "fails-margin-116-02149",
-      "code": "FAILS_MARGIN_116_02149",
-      "label": "Fails Margin 116-02149",
-      "displayOrder": 80,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "59000000.00",
-        "snapshot1130": "59000000.00",
-        "snapshot1330": "59000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "margin-580-10500",
-      "code": "MARGIN_580_10500",
-      "label": "Margin 580-10500",
-      "displayOrder": 90,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "215000000.00",
-        "snapshot1130": "215000000.00",
-        "snapshot1330": "215000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "pbil-arb-margin",
-      "code": "PBIL_ARB_MARGIN",
-      "label": "PBIL/ARB Margin",
-      "displayOrder": 100,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "-835000000.00",
-        "snapshot1130": "-1042000000.00",
-        "snapshot1330": "-1042000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "margin-facility-projected",
-      "code": "MARGIN_FACILITY_PROJECTED",
-      "label": "Margin Facility (Projected)",
-      "displayOrder": 110,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "prime-reserve-requirement",
-      "code": "PRIME_RESERVE_REQUIREMENT",
-      "label": "Prime reserve requirement",
-      "displayOrder": 120,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "credit-prime-repo-activity",
-      "code": "CREDIT_PRIME_REPO_ACTIVITY",
-      "label": "Credit prime repo activity",
-      "displayOrder": 130,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "client-activity-cash-wires",
-      "code": "CLIENT_ACTIVITY_CASH_WIRES",
-      "label": "Client activity / Cash wires",
-      "displayOrder": 140,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "reserve-requirement",
-      "code": "RESERVE_REQUIREMENT",
-      "label": "Reserve requirement",
-      "displayOrder": 150,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "15c3-withdrawal",
-      "code": "15C3_WITHDRAWAL",
-      "label": "15C3 Withdrawal",
-      "displayOrder": 160,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "other",
-      "code": "OTHER",
-      "label": "Other",
-      "displayOrder": 170,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "fx-swaps",
-      "code": "FX_SWAPS",
-      "label": "FX Swaps",
-      "displayOrder": 180,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-140000000.00",
-        "snapshot1330": "-140000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "financing-activity",
-      "code": "FINANCING_ACTIVITY",
-      "label": "Financing activity",
-      "displayOrder": 190,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "als",
-      "code": "ALS",
-      "label": "ALS",
-      "displayOrder": 200,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "financing-dis",
-      "code": "FINANCING_DIS",
-      "label": "DIS",
-      "displayOrder": 210,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "us-treasury-repo-pnv",
-      "code": "US_TREASURY_REPO_PNV",
-      "label": "US treasury repo (PNV)",
-      "displayOrder": 220,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "500000000.00",
-        "snapshot1130": "500000000.00",
-        "snapshot1330": "500000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "equity-repo",
-      "code": "EQUITY_REPO",
-      "label": "Equity repo",
-      "displayOrder": 230,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "equity-jpm",
-      "code": "EQUITY_JPM",
-      "label": "JPM",
-      "displayOrder": 240,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "equity-dis",
-      "code": "EQUITY_DIS",
-      "label": "DIS",
-      "displayOrder": 250,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "600000000.00",
-        "snapshot1130": "600000000.00",
-        "snapshot1330": "300000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "equity-e87",
-      "code": "EQUITY_E87",
-      "label": "E87",
-      "displayOrder": 260,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "end-of-day",
-      "code": "END_OF_DAY",
-      "label": "PBIL EOD Balance",
-      "displayOrder": 270,
-      "depth": 0,
-      "kind": "closing-balance",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": [
-          "sod-balance",
-          "arranged-funding",
-          "slab-activity-2884",
-          "slab-activity-2147",
-          "arb-mtm-wires",
-          "fails-margin-116-02149",
-          "margin-580-10500",
-          "pbil-arb-margin",
-          "margin-facility-projected",
-          "credit-prime-repo-activity",
-          "client-activity-cash-wires",
-          "15c3-withdrawal",
-          "fx-swaps",
-          "als",
-          "financing-dis",
-          "us-treasury-repo-pnv",
-          "equity-jpm",
-          "equity-dis",
-          "equity-e87"
-        ]
-      },
-      "values": {
-        "snapshot0830": "9705000000.00",
-        "snapshot1130": "9358000000.00",
-        "snapshot1330": "9058000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
+      "snapshotId": "opportunityFunding",
+      "sodBalance": "0.00",
+      "arrangedFunding": "0.00",
+      "slabActivity2884": "0.00",
+      "slabActivity2147": "0.00",
+      "arbMtmWires": "0.00",
+      "failsMargin11602149": "0.00",
+      "margin58010500": "0.00",
+      "pbilArbMargin": "0.00",
+      "marginFacilityProjected": "0.00",
+      "creditPrimeRepoActivity": "0.00",
+      "clientActivityCashWires": "0.00",
+      "15c3Withdrawal": "0.00",
+      "fxSwaps": "0.00",
+      "als": "0.00",
+      "financingDis": "0.00",
+      "usTreasuryRepoPnv": "0.00",
+      "equityJpm": "0.00",
+      "equityDis": "0.00",
+      "equityE87": "0.00",
+      "endOfDay": "0.00"
     }
   ]
 }

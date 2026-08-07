@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { APP_RUNTIME_CONFIG, type RuntimeConfig } from '../../../core/config/runtime-config';
 import { FUNDING_PANEL_GATEWAY } from './funding-panel.gateway';
+import { provideFundingPanelDefinition } from './funding-panel-definition.provider';
 import {
   FUNDING_PANEL_DATA_ACCESS_PROVIDERS,
   createFundingPanelGateway,
@@ -11,6 +12,7 @@ import { HttpFundingPanelGateway } from './http-funding-panel.gateway';
 import { MockFundingPanelGateway } from './mock-funding-panel.gateway';
 import { provideFundingPanelMockReport } from './funding-panel-mock-report';
 import { createSecCorpReportFixture } from '../panels/sec-corp/mocks/sec-corp-report.fixture';
+import { SEC_CORP_PANEL_DEFINITION } from '../panels/sec-corp/sec-corp-panel.definition';
 
 describe('funding panel data providers', () => {
   it('selects the self-contained mock gateway when configured', () => {
@@ -49,6 +51,7 @@ function configureDataAccess(
     providers: [
       provideHttpClient(),
       ...FUNDING_PANEL_DATA_ACCESS_PROVIDERS,
+      provideFundingPanelDefinition(SEC_CORP_PANEL_DEFINITION),
       provideFundingPanelMockReport(createSecCorpReportFixture),
       {
         provide: APP_RUNTIME_CONFIG,

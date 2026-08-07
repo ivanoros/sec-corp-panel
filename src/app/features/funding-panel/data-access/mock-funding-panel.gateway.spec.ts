@@ -36,10 +36,10 @@ describe('MockFundingPanelGateway', () => {
 
     expect(savedReport.version).toBe(18);
     expect(savedReport.userId).toBe('e70165');
-    expect(savedReport.rows.find((row) => row.id === 'total-margin')?.values.snapshot0830).toBe(
+    expect(savedReport.rows.find((row) => row.id === 'totalMargin')?.values.snapshot0830).toBe(
       '-210403134.64',
     );
-    expect(savedReport.rows.find((row) => row.id === 'end-of-day')?.values.snapshot0830).toBe(
+    expect(savedReport.rows.find((row) => row.id === 'endOfDay')?.values.snapshot0830).toBe(
       '4811063538.31',
     );
   });

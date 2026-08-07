@@ -29,8 +29,8 @@ describe('funding grid display policy', () => {
   it('centralizes hierarchy labels and row presentation classes', () => {
     const occ = requireRow(rows, 'occ');
     const margin = requireRow(rows, 'margin');
-    const totalMargin = requireRow(rows, 'total-margin');
-    const endOfDay = requireRow(rows, 'end-of-day');
+    const totalMargin = requireRow(rows, 'totalMargin');
+    const endOfDay = requireRow(rows, 'endOfDay');
 
     expect(formatFundingRowLabel(occ)).toBe('- OCC');
     expect(formatFundingRowLabel(margin)).toBe('Margin');

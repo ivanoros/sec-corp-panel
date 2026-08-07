@@ -6,6 +6,8 @@ import {
   type FundingRow,
 } from './funding-report';
 
+const LOWER_CAMEL_ROW_ID_PATTERN = /^[a-z0-9][A-Za-z0-9]*$/;
+
 export interface FundingContractIssue {
   readonly code: string;
   readonly message: string;
@@ -71,6 +73,12 @@ export function validateFundingReport(report: FundingReport): readonly FundingCo
 
   for (const [rowIndex, row] of report.rows.entries()) {
     const path = `rows[${rowIndex}]`;
+
+    if (!LOWER_CAMEL_ROW_ID_PATTERN.test(row.id)) {
+      issues.push(
+        issue('INVALID_ROW_ID_FORMAT', `${path}.id`, `${row.id} must use lower camel case.`),
+      );
+    }
 
     if (rowIds.has(row.id)) {
       issues.push(issue('DUPLICATE_ROW_ID', `${path}.id`, `Duplicate row ${row.id}.`));

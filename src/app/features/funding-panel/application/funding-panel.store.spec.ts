@@ -53,8 +53,8 @@ describe('FundingPanelStore', () => {
 
     store.beginEdit('occ', 'snapshot0830', '-300,000,000');
 
-    expect(findRow(store.report(), 'total-margin').values.snapshot0830).toBe('-210403134.64');
-    expect(findRow(store.report(), 'end-of-day').values.snapshot0830).toBe('4811063538.31');
+    expect(findRow(store.report(), 'totalMargin').values.snapshot0830).toBe('-210403134.64');
+    expect(findRow(store.report(), 'endOfDay').values.snapshot0830).toBe('4811063538.31');
     expect(store.isDirty()).toBe(true);
     expect(gateway.putCommands).toHaveLength(0);
 
@@ -96,12 +96,12 @@ describe('FundingPanelStore', () => {
   it('edits Opps funding, previews totals, and includes the value in the full Update report', async () => {
     await waitForReady(store);
 
-    const originalTotal = findRow(store.report(), 'total-margin').values.opportunityFunding;
+    const originalTotal = findRow(store.report(), 'totalMargin').values.opportunityFunding;
 
     store.beginEdit('occ', 'opportunityFunding', '-290000000');
 
     expect(findRow(store.report(), 'occ').values.opportunityFunding).toBe('-290000000.00');
-    expect(findRow(store.report(), 'total-margin').values.opportunityFunding).not.toBe(
+    expect(findRow(store.report(), 'totalMargin').values.opportunityFunding).not.toBe(
       originalTotal,
     );
     expect(gateway.putCommands).toHaveLength(0);

@@ -51,6 +51,15 @@ Angular bundle loads. The default mock user is `mock-user`.
 - `/sec-corp`
 - `/pbil`
 
+## REST data boundary
+
+The version 2 REST contract is column-oriented and contains only backend-owned
+facts: identity, audit/concurrency metadata, permissions, column IDs, row IDs,
+and values. Panel labels, ordering, hierarchy, edit behavior, and calculation
+dependencies live in the Sec Corp and PBIL frontend definitions. The data-access
+assembler joins both sources into the existing row-oriented domain model used by
+AG Grid and the signals store.
+
 ## Handoff documentation
 
 - [Phase 7 hardening decisions](docs/architecture/phase-7-production-hardening.md)

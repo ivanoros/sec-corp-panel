@@ -40,3 +40,26 @@ describe('validateFundingReport user identity', () => {
     );
   });
 });
+
+describe('validateFundingReport row identity', () => {
+  it('requires lower camel case row IDs', () => {
+    const source = createSecCorpReportFixture();
+    const report = {
+      ...source,
+      rows: source.rows.map((row, index) =>
+        index === 0
+          ? {
+              ...row,
+              id: 'sod-balance',
+            }
+          : row,
+      ),
+    };
+
+    expect(validateFundingReport(report)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'INVALID_ROW_ID_FORMAT', path: 'rows[0].id' }),
+      ]),
+    );
+  });
+});

@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "definitionVersion": 1,
   "reportId": "sec-corp-2026-07-25",
   "panelCode": "sec-corp",
-  "title": "Sec Corp",
   "businessDate": "2026-07-25",
   "currency": "USD",
   "timezone": "America/New_York",
@@ -13,711 +13,176 @@
     "canEdit": true,
     "canSave": true
   },
-  "periods": [
+  "columns": [
     {
-      "id": "snapshot0830",
-      "label": "8:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot0830",
+      "sodBalance": "1679335804.24",
+      "occ": "-308824714.48",
+      "nscc": "28012488.36",
+      "marginFails11602149": "61584377.00",
+      "marginFails090IntlMtm": "0.00",
+      "sodExcessMargin58010500": "0.00",
+      "arbMtmWires": "0.00",
+      "slabMtmWires": "0.00",
+      "marginFacilityProjected": "0.00",
+      "totalMargin": "-219227849.12",
+      "customerWires177Omni177Pay": "-204719307.09",
+      "arbSnc": "0.00",
+      "secCorpArbMargin": "166515694.00",
+      "omni": "0.00",
+      "intradayChange": "130115050.00",
+      "totalWires": "91911436.91",
+      "15c3Deposit": "0.00",
+      "15c3Withdrawal": "0.00",
+      "totalReserveRequirement": "0.00",
+      "fxSwaps": "0.00",
+      "misc": "750000000.00",
+      "totalOther": "750000000.00",
+      "dtc2154": "342143518.25",
+      "dtc2885": "189066447.07",
+      "dtc8238": "56156376.00",
+      "intercoArrangedFundingFlips": "1912853090.48",
+      "totalSettlementActivity": "2500219431.80",
+      "als": "0.00",
+      "clientUsTreasuryShortAbr": "0.00",
+      "totalFinancingActivity": "0.00",
+      "endOfDay": "4802238823.83"
     },
     {
-      "id": "snapshot1130",
-      "label": "11:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot1130",
+      "sodBalance": "1679481497.78",
+      "occ": "-306000000.00",
+      "nscc": "28500000.00",
+      "marginFails11602149": "59000000.00",
+      "marginFails090IntlMtm": "-2000000.00",
+      "sodExcessMargin58010500": "0.00",
+      "arbMtmWires": "-4000000.00",
+      "slabMtmWires": "0.00",
+      "marginFacilityProjected": "0.00",
+      "totalMargin": "-224500000.00",
+      "customerWires177Omni177Pay": "-195000000.00",
+      "arbSnc": "2000000.00",
+      "secCorpArbMargin": "165000000.00",
+      "omni": "-5000000.00",
+      "intradayChange": "125000000.00",
+      "totalWires": "92000000.00",
+      "15c3Deposit": "-10000000.00",
+      "15c3Withdrawal": "0.00",
+      "totalReserveRequirement": "-10000000.00",
+      "fxSwaps": "-50000000.00",
+      "misc": "700000000.00",
+      "totalOther": "650000000.00",
+      "dtc2154": "300000000.00",
+      "dtc2885": "175000000.00",
+      "dtc8238": "60000000.00",
+      "intercoArrangedFundingFlips": "1800000000.00",
+      "totalSettlementActivity": "2335000000.00",
+      "als": "-25000000.00",
+      "clientUsTreasuryShortAbr": "0.00",
+      "totalFinancingActivity": "-25000000.00",
+      "endOfDay": "4496981497.78"
     },
     {
-      "id": "snapshot1330",
-      "label": "1:30",
-      "kind": "snapshot",
-      "editable": true
+      "snapshotId": "snapshot1330",
+      "sodBalance": "1679656497.78",
+      "occ": "-302500000.00",
+      "nscc": "29000000.00",
+      "marginFails11602149": "55000000.00",
+      "marginFails090IntlMtm": "-1000000.00",
+      "sodExcessMargin58010500": "2500000.00",
+      "arbMtmWires": "-2000000.00",
+      "slabMtmWires": "0.00",
+      "marginFacilityProjected": "10000000.00",
+      "totalMargin": "-209000000.00",
+      "customerWires177Omni177Pay": "-185000000.00",
+      "arbSnc": "0.00",
+      "secCorpArbMargin": "160000000.00",
+      "omni": "-2000000.00",
+      "intradayChange": "120000000.00",
+      "totalWires": "93000000.00",
+      "15c3Deposit": "-15000000.00",
+      "15c3Withdrawal": "5000000.00",
+      "totalReserveRequirement": "-10000000.00",
+      "fxSwaps": "-75000000.00",
+      "misc": "650000000.00",
+      "totalOther": "575000000.00",
+      "dtc2154": "275000000.00",
+      "dtc2885": "150000000.00",
+      "dtc8238": "50000000.00",
+      "intercoArrangedFundingFlips": "1700000000.00",
+      "totalSettlementActivity": "2175000000.00",
+      "als": "-50000000.00",
+      "clientUsTreasuryShortAbr": "15000000.00",
+      "totalFinancingActivity": "-35000000.00",
+      "endOfDay": "4268656497.78"
     },
     {
-      "id": "live",
-      "label": "LIVE",
-      "kind": "live",
-      "editable": false
+      "snapshotId": "live",
+      "sodBalance": "1679781497.78",
+      "occ": "-300000000.00",
+      "nscc": "29500000.00",
+      "marginFails11602149": "52000000.00",
+      "marginFails090IntlMtm": "0.00",
+      "sodExcessMargin58010500": "3000000.00",
+      "arbMtmWires": "0.00",
+      "slabMtmWires": "0.00",
+      "marginFacilityProjected": "12000000.00",
+      "totalMargin": "-203500000.00",
+      "customerWires177Omni177Pay": "-175000000.00",
+      "arbSnc": "0.00",
+      "secCorpArbMargin": "155000000.00",
+      "omni": "0.00",
+      "intradayChange": "115000000.00",
+      "totalWires": "95000000.00",
+      "15c3Deposit": "-20000000.00",
+      "15c3Withdrawal": "8000000.00",
+      "totalReserveRequirement": "-12000000.00",
+      "fxSwaps": "-100000000.00",
+      "misc": "600000000.00",
+      "totalOther": "500000000.00",
+      "dtc2154": "250000000.00",
+      "dtc2885": "140000000.00",
+      "dtc8238": "45000000.00",
+      "intercoArrangedFundingFlips": "1600000000.00",
+      "totalSettlementActivity": "2035000000.00",
+      "als": "-75000000.00",
+      "clientUsTreasuryShortAbr": "20000000.00",
+      "totalFinancingActivity": "-55000000.00",
+      "endOfDay": "4039281497.78"
     },
     {
-      "id": "opportunityFunding",
-      "label": "Opps funding",
-      "kind": "opportunity",
-      "editable": true
-    }
-  ],
-  "rows": [
-    {
-      "id": "sod-balance",
-      "code": "SOD_BALANCE",
-      "label": "SOD Balance",
-      "displayOrder": 10,
-      "depth": 0,
-      "kind": "opening-balance",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "1679335804.24",
-        "snapshot1130": "1679481497.78",
-        "snapshot1330": "1679656497.78",
-        "live": "1679781497.78",
-        "opportunityFunding": "1679781497.78"
-      }
-    },
-    {
-      "id": "margin",
-      "code": "MARGIN",
-      "label": "Margin",
-      "displayOrder": 20,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "occ",
-      "code": "OCC",
-      "label": "OCC",
-      "displayOrder": 30,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "-308824714.48",
-        "snapshot1130": "-306000000.00",
-        "snapshot1330": "-302500000.00",
-        "live": "-300000000.00",
-        "opportunityFunding": "-300000000.00"
-      }
-    },
-    {
-      "id": "nscc",
-      "code": "NSCC",
-      "label": "NSCC",
-      "displayOrder": 40,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "28012488.36",
-        "snapshot1130": "28500000.00",
-        "snapshot1330": "29000000.00",
-        "live": "29500000.00",
-        "opportunityFunding": "29500000.00"
-      }
-    },
-    {
-      "id": "margin-fails-116-02149",
-      "code": "MARGIN_FAILS_116_02149",
-      "label": "Fails margin 116-02149",
-      "displayOrder": 50,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "61584377.00",
-        "snapshot1130": "59000000.00",
-        "snapshot1330": "55000000.00",
-        "live": "52000000.00",
-        "opportunityFunding": "52000000.00"
-      }
-    },
-    {
-      "id": "margin-fails-090-intl-mtm",
-      "code": "MARGIN_FAILS_090_INTL_MTM",
-      "label": "Margin Fails (090 Account) Intl & MtM",
-      "displayOrder": 60,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-2000000.00",
-        "snapshot1330": "-1000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "sod-excess-margin-580-10500",
-      "code": "SOD_EXCESS_MARGIN_580_10500",
-      "label": "Margin 580-10500",
-      "displayOrder": 70,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "2500000.00",
-        "live": "3000000.00",
-        "opportunityFunding": "3000000.00"
-      }
-    },
-    {
-      "id": "arb-mtm-wires",
-      "code": "ARB_MTM_WIRES",
-      "label": "Arb MtM Wires",
-      "displayOrder": 80,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-4000000.00",
-        "snapshot1330": "-2000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "slab-mtm-wires",
-      "code": "SLAB_MTM_WIRES",
-      "label": "SLAB MtM Wires",
-      "displayOrder": 90,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "margin-facility-projected",
-      "code": "MARGIN_FACILITY_PROJECTED",
-      "label": "Margin facility (Projected)",
-      "displayOrder": 100,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "10000000.00",
-        "live": "12000000.00",
-        "opportunityFunding": "12000000.00"
-      }
-    },
-    {
-      "id": "total-margin",
-      "code": "TOTAL_MARGIN",
-      "label": "Total margin",
-      "displayOrder": 110,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": [
-          "occ",
-          "nscc",
-          "margin-fails-116-02149",
-          "margin-fails-090-intl-mtm",
-          "sod-excess-margin-580-10500",
-          "arb-mtm-wires",
-          "slab-mtm-wires",
-          "margin-facility-projected"
-        ]
-      },
-      "values": {
-        "snapshot0830": "-219227849.12",
-        "snapshot1130": "-224500000.00",
-        "snapshot1330": "-209000000.00",
-        "live": "-203500000.00",
-        "opportunityFunding": "-203500000.00"
-      }
-    },
-    {
-      "id": "wires",
-      "code": "WIRES",
-      "label": "Wires",
-      "displayOrder": 120,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "customer-wires-177-omni-177-pay",
-      "code": "CUSTOMER_WIRES_177_OMNI_177_PAY",
-      "label": "Cust Wires 177/Omni/177 Pay",
-      "displayOrder": 130,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "-204719307.09",
-        "snapshot1130": "-195000000.00",
-        "snapshot1330": "-185000000.00",
-        "live": "-175000000.00",
-        "opportunityFunding": "-175000000.00"
-      }
-    },
-    {
-      "id": "arb-snc",
-      "code": "ARB_SNC",
-      "label": "ARB SNC",
-      "displayOrder": 140,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "2000000.00",
-        "snapshot1330": "0.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "sec-corp-arb-margin",
-      "code": "SEC_CORP_ARB_MARGIN",
-      "label": "Sec Corp/ARB Margin",
-      "displayOrder": 150,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "166515694.00",
-        "snapshot1130": "165000000.00",
-        "snapshot1330": "160000000.00",
-        "live": "155000000.00",
-        "opportunityFunding": "155000000.00"
-      }
-    },
-    {
-      "id": "omni",
-      "code": "OMNI",
-      "label": "OMNI",
-      "displayOrder": 160,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-5000000.00",
-        "snapshot1330": "-2000000.00",
-        "live": "0.00",
-        "opportunityFunding": "0.00"
-      }
-    },
-    {
-      "id": "intraday-change",
-      "code": "INTRADAY_CHANGE",
-      "label": "Intraday change",
-      "displayOrder": 170,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "130115050.00",
-        "snapshot1130": "125000000.00",
-        "snapshot1330": "120000000.00",
-        "live": "115000000.00",
-        "opportunityFunding": "115000000.00"
-      }
-    },
-    {
-      "id": "total-wires",
-      "code": "TOTAL_WIRES",
-      "label": "Total Wires",
-      "displayOrder": 180,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": [
-          "customer-wires-177-omni-177-pay",
-          "arb-snc",
-          "sec-corp-arb-margin",
-          "omni",
-          "intraday-change"
-        ]
-      },
-      "values": {
-        "snapshot0830": "91911436.91",
-        "snapshot1130": "92000000.00",
-        "snapshot1330": "93000000.00",
-        "live": "95000000.00",
-        "opportunityFunding": "95000000.00"
-      }
-    },
-    {
-      "id": "reserve-requirement",
-      "code": "RESERVE_REQUIREMENT",
-      "label": "Reserve requirement",
-      "displayOrder": 190,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "15c3-deposit",
-      "code": "15C3_DEPOSIT",
-      "label": "15C3 Deposit",
-      "displayOrder": 200,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-10000000.00",
-        "snapshot1330": "-15000000.00",
-        "live": "-20000000.00",
-        "opportunityFunding": "-20000000.00"
-      }
-    },
-    {
-      "id": "15c3-withdrawal",
-      "code": "15C3_WITHDRAWAL",
-      "label": "15C3 Withdrawal",
-      "displayOrder": 210,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "5000000.00",
-        "live": "8000000.00",
-        "opportunityFunding": "8000000.00"
-      }
-    },
-    {
-      "id": "total-reserve-requirement",
-      "code": "TOTAL_RESERVE_REQUIREMENT",
-      "label": "Total reserve requirement",
-      "displayOrder": 220,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": ["15c3-deposit", "15c3-withdrawal"]
-      },
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-10000000.00",
-        "snapshot1330": "-10000000.00",
-        "live": "-12000000.00",
-        "opportunityFunding": "-12000000.00"
-      }
-    },
-    {
-      "id": "other",
-      "code": "OTHER",
-      "label": "Other",
-      "displayOrder": 230,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "fx-swaps",
-      "code": "FX_SWAPS",
-      "label": "FX swaps",
-      "displayOrder": 240,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-50000000.00",
-        "snapshot1330": "-75000000.00",
-        "live": "-100000000.00",
-        "opportunityFunding": "-100000000.00"
-      }
-    },
-    {
-      "id": "misc",
-      "code": "MISC",
-      "label": "Misc",
-      "displayOrder": 250,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "750000000.00",
-        "snapshot1130": "700000000.00",
-        "snapshot1330": "650000000.00",
-        "live": "600000000.00",
-        "opportunityFunding": "600000000.00"
-      }
-    },
-    {
-      "id": "total-other",
-      "code": "TOTAL_OTHER",
-      "label": "Total other",
-      "displayOrder": 260,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": ["fx-swaps", "misc"]
-      },
-      "values": {
-        "snapshot0830": "750000000.00",
-        "snapshot1130": "650000000.00",
-        "snapshot1330": "575000000.00",
-        "live": "500000000.00",
-        "opportunityFunding": "500000000.00"
-      }
-    },
-    {
-      "id": "settlement-activity-dtc",
-      "code": "SETTLEMENT_ACTIVITY_DTC",
-      "label": "Settlement activity (DTC)",
-      "displayOrder": 270,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "dtc-2154",
-      "code": "DTC_2154",
-      "label": "2154",
-      "displayOrder": 280,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "342143518.25",
-        "snapshot1130": "300000000.00",
-        "snapshot1330": "275000000.00",
-        "live": "250000000.00",
-        "opportunityFunding": "250000000.00"
-      }
-    },
-    {
-      "id": "dtc-2885",
-      "code": "DTC_2885",
-      "label": "2885",
-      "displayOrder": 290,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "189066447.07",
-        "snapshot1130": "175000000.00",
-        "snapshot1330": "150000000.00",
-        "live": "140000000.00",
-        "opportunityFunding": "140000000.00"
-      }
-    },
-    {
-      "id": "dtc-8238",
-      "code": "DTC_8238",
-      "label": "8238",
-      "displayOrder": 300,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "56156376.00",
-        "snapshot1130": "60000000.00",
-        "snapshot1330": "50000000.00",
-        "live": "45000000.00",
-        "opportunityFunding": "45000000.00"
-      }
-    },
-    {
-      "id": "interco-arranged-funding-flips",
-      "code": "INTERCO_ARRANGED_FUNDING_FLIPS",
-      "label": "Interco Arranged funding flips",
-      "displayOrder": 310,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "1912853090.48",
-        "snapshot1130": "1800000000.00",
-        "snapshot1330": "1700000000.00",
-        "live": "1600000000.00",
-        "opportunityFunding": "1600000000.00"
-      }
-    },
-    {
-      "id": "total-settlement-activity",
-      "code": "TOTAL_SETTLEMENT_ACTIVITY",
-      "label": "Total settlement activity",
-      "displayOrder": 320,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": ["dtc-2154", "dtc-2885", "dtc-8238", "interco-arranged-funding-flips"]
-      },
-      "values": {
-        "snapshot0830": "2500219431.80",
-        "snapshot1130": "2335000000.00",
-        "snapshot1330": "2175000000.00",
-        "live": "2035000000.00",
-        "opportunityFunding": "2035000000.00"
-      }
-    },
-    {
-      "id": "financing-activity",
-      "code": "FINANCING_ACTIVITY",
-      "label": "Financing activity",
-      "displayOrder": 330,
-      "depth": 0,
-      "kind": "section",
-      "valueMode": "section",
-      "calculation": null,
-      "values": {
-        "snapshot0830": null,
-        "snapshot1130": null,
-        "snapshot1330": null,
-        "live": null,
-        "opportunityFunding": null
-      }
-    },
-    {
-      "id": "als",
-      "code": "ALS",
-      "label": "ALS",
-      "displayOrder": 340,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-25000000.00",
-        "snapshot1330": "-50000000.00",
-        "live": "-75000000.00",
-        "opportunityFunding": "-75000000.00"
-      }
-    },
-    {
-      "id": "client-us-treasury-short-abr",
-      "code": "CLIENT_US_TREASURY_SHORT_ABR",
-      "label": "Client US treasury Short / ABR",
-      "displayOrder": 350,
-      "depth": 1,
-      "kind": "detail",
-      "valueMode": "input",
-      "calculation": null,
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "0.00",
-        "snapshot1330": "15000000.00",
-        "live": "20000000.00",
-        "opportunityFunding": "20000000.00"
-      }
-    },
-    {
-      "id": "total-financing-activity",
-      "code": "TOTAL_FINANCING_ACTIVITY",
-      "label": "Total financing activity",
-      "displayOrder": 360,
-      "depth": 0,
-      "kind": "subtotal",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": ["als", "client-us-treasury-short-abr"]
-      },
-      "values": {
-        "snapshot0830": "0.00",
-        "snapshot1130": "-25000000.00",
-        "snapshot1330": "-35000000.00",
-        "live": "-55000000.00",
-        "opportunityFunding": "-55000000.00"
-      }
-    },
-    {
-      "id": "end-of-day",
-      "code": "END_OF_DAY",
-      "label": "End of day",
-      "displayOrder": 370,
-      "depth": 0,
-      "kind": "closing-balance",
-      "valueMode": "calculated",
-      "calculation": {
-        "kind": "sum",
-        "rowIds": [
-          "sod-balance",
-          "total-margin",
-          "total-wires",
-          "total-reserve-requirement",
-          "total-other",
-          "total-settlement-activity",
-          "total-financing-activity"
-        ]
-      },
-      "values": {
-        "snapshot0830": "4802238823.83",
-        "snapshot1130": "4496981497.78",
-        "snapshot1330": "4268656497.78",
-        "live": "4039281497.78",
-        "opportunityFunding": "4039281497.78"
-      }
+      "snapshotId": "opportunityFunding",
+      "sodBalance": "1679781497.78",
+      "occ": "-300000000.00",
+      "nscc": "29500000.00",
+      "marginFails11602149": "52000000.00",
+      "marginFails090IntlMtm": "0.00",
+      "sodExcessMargin58010500": "3000000.00",
+      "arbMtmWires": "0.00",
+      "slabMtmWires": "0.00",
+      "marginFacilityProjected": "12000000.00",
+      "totalMargin": "-203500000.00",
+      "customerWires177Omni177Pay": "-175000000.00",
+      "arbSnc": "0.00",
+      "secCorpArbMargin": "155000000.00",
+      "omni": "0.00",
+      "intradayChange": "115000000.00",
+      "totalWires": "95000000.00",
+      "15c3Deposit": "-20000000.00",
+      "15c3Withdrawal": "8000000.00",
+      "totalReserveRequirement": "-12000000.00",
+      "fxSwaps": "-100000000.00",
+      "misc": "600000000.00",
+      "totalOther": "500000000.00",
+      "dtc2154": "250000000.00",
+      "dtc2885": "140000000.00",
+      "dtc8238": "45000000.00",
+      "intercoArrangedFundingFlips": "1600000000.00",
+      "totalSettlementActivity": "2035000000.00",
+      "als": "-75000000.00",
+      "clientUsTreasuryShortAbr": "20000000.00",
+      "totalFinancingActivity": "-55000000.00",
+      "endOfDay": "4039281497.78"
     }
   ]
 }

@@ -2,6 +2,7 @@ import { findCalculationMismatches } from '../../../domain/report-calculator';
 import { parseFundingReportResponse } from '../../../data-access/funding-report.mapper';
 import { FundingPanelContractError } from '../../../domain/report-validator';
 import { SEC_CORP_ROW_CATALOG } from '../sec-corp-row-catalog';
+import { SEC_CORP_PANEL_DEFINITION } from '../sec-corp-panel.definition';
 import { createSecCorpReportFixture, SEC_CORP_REPORT_FIXTURE } from './sec-corp-report.fixture';
 
 describe('Sec Corp report fixture', () => {
@@ -35,7 +36,7 @@ describe('Sec Corp report fixture', () => {
 
   it('reconciles every calculated value and the source end-of-day total', () => {
     const report = createSecCorpReportFixture();
-    const endOfDay = report.rows.find((row) => row.id === 'end-of-day');
+    const endOfDay = report.rows.find((row) => row.id === 'endOfDay');
 
     expect(findCalculationMismatches(report)).toEqual([]);
     expect(endOfDay?.values.snapshot0830).toBe('4802238823.83');
@@ -50,7 +51,9 @@ describe('Sec Corp report fixture', () => {
 
     malformedFixture['version'] = -1;
 
-    expect(() => parseFundingReportResponse(malformedFixture)).toThrow(FundingPanelContractError);
+    expect(() => parseFundingReportResponse(malformedFixture, SEC_CORP_PANEL_DEFINITION)).toThrow(
+      FundingPanelContractError,
+    );
   });
 });
 

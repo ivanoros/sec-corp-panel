@@ -7,17 +7,17 @@ fractional digits. JSON numbers are not accepted.
 
 ```json
 {
-  "snapshot0830": "-308824714.48"
+  "occ": "-308824714.48"
 }
 ```
 
-`null` is reserved for section rows. A snapshot that has not yet received a
-business value is explicitly `"0.00"`; a missing period property is a contract
-failure.
+Section rows are presentation definitions and are omitted from backend column
+values. A period that has not yet received a business value is explicitly
+`"0.00"`; a missing numeric row value is a contract failure.
 
 ## Periods
 
-Every report contains exactly these periods in this order:
+The frontend definition maps exactly these backend column IDs:
 
 1. `snapshot0830`, displayed as `8:30`, editable.
 2. `snapshot1130`, displayed as `11:30`, editable.
@@ -28,6 +28,31 @@ Every report contains exactly these periods in this order:
 Period editability is an allowlist in the domain contract. Even in an editable
 period, only rows whose `valueMode` is `input` can enter edit mode. Bucket labels,
 LIVE values, sections, subtotals, totals, and closing balances remain read-only.
+
+## Row identity
+
+Row `id` values use lower camel case so they align with backend object names,
+for example `arbMtmWires`, `totalMargin`, and `endOfDay`. Calculation `rowIds`
+use exactly the same identifiers. Hyphenated row IDs are rejected at the REST
+schema and domain-validation boundaries.
+
+The numeric-leading business term `15C3` follows the same mechanical rule and is
+represented as `15c3Deposit` or `15c3Withdrawal`.
+
+## Backend data and frontend definitions
+
+REST contract version 2 contains backend-owned facts only: report identity,
+audit/concurrency metadata, permissions, snapshot IDs, row IDs, and values. Labels,
+display order, hierarchy, row kind, edit behavior, period labels, and calculation
+dependencies live in the panel definition selected by `panelCode`.
+
+`schemaVersion` versions the wire structure. `definitionVersion` versions the
+shared set of supported row and column IDs. An unknown ID, missing or duplicate
+column, section value, or incompatible definition version fails the complete
+response instead of silently hiding financial data. Row values are object
+properties, so each row ID can occur only once in the parsed contract. Backend
+serializers must also avoid duplicate raw JSON properties because parsers may
+silently retain only the last property.
 
 ## Sec Corp row mapping
 
@@ -54,10 +79,36 @@ End of Day.
 GET /api/v1/funding-panels/sec-corp?businessDate=2026-07-25&userId=e70165
 ```
 
-The response is validated at runtime before it enters the domain. It includes
-`version`, `userId`, permissions, period metadata, ordered rows, and authoritative
-calculated values. The representative Sec Corp fixture contains 37 rows; the
-shared contract does not impose that fixture-specific count on future panels.
+The response is validated and joined with the Sec Corp frontend definition before
+it enters the row-oriented domain model. A compact response has this shape:
+
+```json
+{
+  "schemaVersion": 2,
+  "definitionVersion": 1,
+  "reportId": "sec-corp-2026-07-25",
+  "panelCode": "sec-corp",
+  "businessDate": "2026-07-25",
+  "currency": "USD",
+  "timezone": "America/New_York",
+  "asOf": "2026-07-25T13:42:18-04:00",
+  "version": 17,
+  "userId": "previousUser",
+  "permissions": { "canEdit": true, "canSave": true },
+  "columns": [
+    {
+      "snapshotId": "snapshot0830",
+      "sodBalance": "1679335804.24",
+      "occ": "-308824714.48",
+      "totalMargin": "-219227849.12"
+    }
+  ]
+}
+```
+
+The example abbreviates `columns`; the real response has all five snapshots and
+every non-section row as a direct snapshot property, including authoritative
+calculated rows.
 
 The query `userId` identifies the authenticated user making the retrieval. In
 the returned report, `userId` is audit metadata for the last successful update:
@@ -74,30 +125,36 @@ Content-Type: application/json
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "definitionVersion": 1,
   "expectedVersion": 17,
   "userId": "e70165",
   "report": {
-    "schemaVersion": 1,
     "reportId": "sec-corp-2026-07-25",
     "panelCode": "sec-corp",
-    "title": "Sec Corp",
     "businessDate": "2026-07-25",
     "currency": "USD",
     "timezone": "America/New_York",
     "asOf": "2026-07-25T13:42:18-04:00",
     "version": 17,
-    "userId": "previous-user",
+    "userId": "previousUser",
     "permissions": { "canEdit": true, "canSave": true },
-    "periods": ["all five period objects from GET"],
-    "rows": ["all row objects, values, and calculations from the edited report"]
+    "columns": [
+      {
+        "snapshotId": "snapshot0830",
+        "sodBalance": "1679335804.24",
+        "occ": "-308824714.48",
+        "totalMargin": "-219227849.12"
+      }
+    ]
   }
 }
 ```
 
-The arrays above are abbreviated only for readability. The real request sends
-the complete report dataset: metadata, permissions, all five period definitions,
-every row, every period value, and every calculation definition. The database
+The snapshots above are abbreviated only for readability. The real request sends
+the complete backend-owned dataset: metadata, permissions, all five snapshot IDs,
+and every non-section row value. It does not send labels, display order,
+hierarchy, formatting, or calculation definitions. The database
 compares `expectedVersion` atomically, validates the report identity, persists
 the allowed input values, increments the version, recalculates authoritative
 totals, sets the returned report's `userId` to the request actor, and returns the

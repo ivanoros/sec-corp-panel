@@ -23,8 +23,8 @@ describe('recalculateFundingReport', () => {
 
     const recalculated = recalculateFundingReport(editedReport);
 
-    expect(findRow(recalculated, 'total-margin').values.snapshot0830).toBe('-210403134.64');
-    expect(findRow(recalculated, 'end-of-day').values.snapshot0830).toBe('4811063538.31');
+    expect(findRow(recalculated, 'totalMargin').values.snapshot0830).toBe('-210403134.64');
+    expect(findRow(recalculated, 'endOfDay').values.snapshot0830).toBe('4811063538.31');
   });
 });
 

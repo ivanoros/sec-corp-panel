@@ -4,6 +4,9 @@ import { PERIOD_IDS } from '../domain/funding-report';
 
 const canonicalDecimalSchema = z.string().regex(/^-?(?:0|[1-9]\d*)\.\d{2}$/);
 const identifierSchema = z.string().trim().min(1).max(120);
+const rowIdentifierSchema = identifierSchema.regex(/^[a-z0-9][A-Za-z0-9]*$/, {
+  message: 'Row IDs must use lower camel case.',
+});
 const userIdSchema = z.string().trim().min(1).max(128);
 export const requestUserIdSchema = userIdSchema.refine((userId) => userId !== 'system', {
   message: 'Update userId must identify an actual user.',
@@ -15,95 +18,84 @@ const businessDateSchema = z
     message: 'Invalid business date.',
   });
 
-export const fundingValueMapSchema = z
+const permissionsSchema = z
   .object({
-    snapshot0830: canonicalDecimalSchema.nullable(),
-    snapshot1130: canonicalDecimalSchema.nullable(),
-    snapshot1330: canonicalDecimalSchema.nullable(),
-    live: canonicalDecimalSchema.nullable(),
-    opportunityFunding: canonicalDecimalSchema.nullable(),
+    canEdit: z.boolean(),
+    canSave: z.boolean(),
   })
   .strict();
 
-const periodSchema = z
+const fundingColumnSchema = z
   .object({
-    id: z.enum(PERIOD_IDS),
-    label: z.string().trim().min(1).max(40),
-    kind: z.enum(['snapshot', 'live', 'opportunity']),
-    editable: z.boolean(),
+    snapshotId: z.enum(PERIOD_IDS),
   })
-  .strict();
+  .catchall(canonicalDecimalSchema)
+  .superRefine((column, context) => {
+    const rowIds = Object.keys(column).filter((key) => key !== 'snapshotId');
 
-const calculationSchema = z
-  .object({
-    kind: z.literal('sum'),
-    rowIds: z.array(identifierSchema).min(1),
-  })
-  .strict();
-
-const fundingRowSchema = z
-  .object({
-    id: identifierSchema,
-    code: identifierSchema,
-    label: z.string().trim().min(1).max(160),
-    displayOrder: z.number().int().positive(),
-    depth: z.union([z.literal(0), z.literal(1), z.literal(2)]),
-    kind: z.enum(['opening-balance', 'section', 'detail', 'subtotal', 'closing-balance']),
-    valueMode: z.enum(['input', 'calculated', 'section']),
-    calculation: calculationSchema.nullable(),
-    values: fundingValueMapSchema,
-  })
-  .strict();
-
-export const fundingReportSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    reportId: identifierSchema,
-    panelCode: identifierSchema,
-    title: z.string().trim().min(1).max(80),
-    businessDate: businessDateSchema,
-    currency: z.string().regex(/^[A-Z]{3}$/),
-    timezone: z.string().trim().min(1).max(80),
-    asOf: z.iso.datetime({ offset: true }),
-    version: z.number().int().nonnegative(),
-    userId: userIdSchema,
-    permissions: z
-      .object({
-        canEdit: z.boolean(),
-        canSave: z.boolean(),
-      })
-      .strict(),
-    periods: z.array(periodSchema).length(PERIOD_IDS.length),
-    rows: z.array(fundingRowSchema).min(1).max(500),
-  })
-  .strict()
-  .superRefine(({ version, userId }, context) => {
-    if (version === 0 && userId !== 'system') {
+    if (rowIds.length === 0) {
       context.addIssue({
         code: 'custom',
-        message: 'A version-0 report must be owned by system.',
-        path: ['userId'],
+        message: 'A snapshot must contain at least one row value.',
       });
     }
 
-    if (version > 0 && userId === 'system') {
+    if (rowIds.length > 500) {
       context.addIssue({
         code: 'custom',
-        message: 'A versioned report must identify the actual user who last updated it.',
-        path: ['userId'],
+        message: 'A snapshot cannot contain more than 500 row values.',
       });
+    }
+
+    for (const rowId of rowIds) {
+      const result = rowIdentifierSchema.safeParse(rowId);
+
+      if (!result.success) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Row IDs must use lower camel case.',
+          path: [rowId],
+        });
+      }
     }
   });
 
+const fundingReportPayloadShape = {
+  reportId: identifierSchema,
+  panelCode: identifierSchema,
+  businessDate: businessDateSchema,
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  timezone: z.string().trim().min(1).max(80),
+  asOf: z.iso.datetime({ offset: true }),
+  version: z.number().int().nonnegative(),
+  userId: userIdSchema,
+  permissions: permissionsSchema,
+  columns: z.array(fundingColumnSchema).length(PERIOD_IDS.length),
+} as const;
+
+export const fundingReportPayloadSchema = z.object(fundingReportPayloadShape).strict();
+
+export const fundingReportSchema = z
+  .object({
+    schemaVersion: z.literal(2),
+    definitionVersion: z.number().int().positive(),
+    ...fundingReportPayloadShape,
+  })
+  .strict()
+  .superRefine(validateReportIdentity);
+
 export const saveFundingReportRequestSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
+    definitionVersion: z.number().int().positive(),
     expectedVersion: z.number().int().nonnegative(),
     userId: requestUserIdSchema,
-    report: fundingReportSchema,
+    report: fundingReportPayloadSchema,
   })
   .strict()
   .superRefine(({ expectedVersion, report }, context) => {
+    validateReportIdentity(report, context);
+
     if (report.version !== expectedVersion) {
       context.addIssue({
         code: 'custom',
@@ -123,6 +115,27 @@ export const versionConflictResponseSchema = z
   .strict();
 
 export const contractPeriodIds = PERIOD_IDS;
+
+function validateReportIdentity(
+  report: { readonly userId: string; readonly version: number },
+  context: z.RefinementCtx,
+): void {
+  if (report.version === 0 && report.userId !== 'system') {
+    context.addIssue({
+      code: 'custom',
+      message: 'A version-0 report must be owned by system.',
+      path: ['userId'],
+    });
+  }
+
+  if (report.version > 0 && report.userId === 'system') {
+    context.addIssue({
+      code: 'custom',
+      message: 'A versioned report must identify the actual user who last updated it.',
+      path: ['userId'],
+    });
+  }
+}
 
 function isValidBusinessDate(value: string): boolean {
   const [yearText, monthText, dayText] = value.split('-');

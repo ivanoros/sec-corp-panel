@@ -5,20 +5,21 @@ import { catchError, map, throwError, type Observable } from 'rxjs';
 import { APP_RUNTIME_CONFIG } from '../../../core/config/runtime-config';
 import type { FundingReport, SaveFundingReportCommand } from '../domain/funding-report';
 import type { SaveFundingReportRequestDto, VersionConflictResponseDto } from './funding-panel.dto';
+import { FUNDING_PANEL_DEFINITION } from './funding-panel-definition.provider';
 import {
   type FundingPanelGateway,
   FundingPanelVersionConflictError,
 } from './funding-panel.gateway';
+import { requestUserIdSchema, versionConflictResponseSchema } from './funding-panel.schema';
 import {
-  requestUserIdSchema,
-  saveFundingReportRequestSchema,
-  versionConflictResponseSchema,
-} from './funding-panel.schema';
-import { parseFundingReportResponse } from './funding-report.mapper';
+  parseFundingReportResponse,
+  serializeSaveFundingReportRequest,
+} from './funding-report.mapper';
 
 @Injectable()
 export class HttpFundingPanelGateway implements FundingPanelGateway {
   private readonly http = inject(HttpClient);
+  private readonly definition = inject(FUNDING_PANEL_DEFINITION);
   private readonly runtimeConfig = inject(APP_RUNTIME_CONFIG);
   private readonly resourceBaseUrl = `${removeTrailingSlash(
     this.runtimeConfig.apiBaseUrl,
@@ -32,11 +33,11 @@ export class HttpFundingPanelGateway implements FundingPanelGateway {
       .get<unknown>(url, {
         params: { businessDate, userId: requestUserId },
       })
-      .pipe(map((response) => parseFundingReportResponse(response)));
+      .pipe(map((response) => parseFundingReportResponse(response, this.definition)));
   }
 
   putReport(command: SaveFundingReportCommand): Observable<FundingReport> {
-    const request = toRequestDto(command);
+    const request = toRequestDto(command, this.definition);
     const url = `${this.resourceBaseUrl}/${encodeURIComponent(
       command.report.panelCode,
     )}/${encodeURIComponent(command.report.reportId)}`;
@@ -45,7 +46,7 @@ export class HttpFundingPanelGateway implements FundingPanelGateway {
     });
 
     return this.http.put<unknown>(url, request, { headers }).pipe(
-      map((response) => parseFundingReportResponse(response)),
+      map((response) => parseFundingReportResponse(response, this.definition)),
       catchError((error: unknown) => this.mapSaveError(error, command)),
     );
   }
@@ -67,13 +68,11 @@ export class HttpFundingPanelGateway implements FundingPanelGateway {
   }
 }
 
-function toRequestDto(command: SaveFundingReportCommand): SaveFundingReportRequestDto {
-  return saveFundingReportRequestSchema.parse({
-    schemaVersion: command.schemaVersion,
-    expectedVersion: command.expectedVersion,
-    userId: command.userId,
-    report: command.report,
-  });
+function toRequestDto(
+  command: SaveFundingReportCommand,
+  definition: Parameters<typeof serializeSaveFundingReportRequest>[1],
+): SaveFundingReportRequestDto {
+  return serializeSaveFundingReportRequest(command, definition);
 }
 
 function parseVersionConflict(candidate: unknown): VersionConflictResponseDto | null {

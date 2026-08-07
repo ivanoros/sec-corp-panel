@@ -13,7 +13,7 @@ into one another.
 
 The store keeps three deliberately separate representations:
 
-1. `serverReport` is the latest complete report confirmed by GET or PUT,
+1. `serverReport` is the latest complete assembled domain report confirmed by GET or PUT,
    including the version and last-updater `userId`.
 2. `edits` is a sparse immutable overlay containing committed, unsaved snapshot
    cells.
@@ -54,10 +54,11 @@ two-decimal string required by the REST contract.
 ## Explicit and serialized updates
 
 Only one PUT can be in flight for a store. Each Update captures the complete
-preview report dataset, current confirmed version, and current request actor
+preview domain report, current confirmed version, and current request actor
 `userId`. The query state contains panel code, business date, and current user;
 the report's separate `userId` remains the previous successful updater until the
-server accepts the save.
+server accepts the save. The HTTP serializer removes presentation metadata and
+transposes the report into the compact column-oriented version 2 payload.
 
 Edits made while that PUT is pending remain in the overlay. When the response
 arrives, the overlay is rebased against the authoritative returned report:

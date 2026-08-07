@@ -53,7 +53,7 @@ describe('PbilPanelComponent', () => {
       const viewModel = fixture.componentInstance.store.viewModel();
       expect(viewModel).not.toBeNull();
 
-      const arrangedFunding = viewModel?.rows.find(({ id }) => id === 'arranged-funding');
+      const arrangedFunding = viewModel?.rows.find(({ id }) => id === 'arrangedFunding');
       expect(arrangedFunding?.cells.snapshot0830.editable).toBe(true);
       expect(arrangedFunding?.cells.snapshot1130.editable).toBe(true);
       expect(arrangedFunding?.cells.snapshot1330.editable).toBe(true);
@@ -72,8 +72,8 @@ describe('PbilPanelComponent', () => {
     });
 
     expect(store.report()?.version).toBe(7);
-    store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
-    expect(store.report()?.rows.find(({ id }) => id === 'end-of-day')?.values.snapshot0830).toBe(
+    store.beginEdit('pbilArbMargin', 'snapshot0830', '-800000000');
+    expect(store.report()?.rows.find(({ id }) => id === 'endOfDay')?.values.snapshot0830).toBe(
       '9740000000.00',
     );
     expect(store.commitEdit()).toBe(true);
@@ -123,7 +123,7 @@ describe('PbilPanelComponent', () => {
     expect(externallySavedReport.version).toBe(8);
     expect(store.report()?.version).toBe(7);
 
-    store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
+    store.beginEdit('pbilArbMargin', 'snapshot0830', '-800000000');
     expect(store.commitEdit()).toBe(true);
     expect(store.updateReport()).toBe(true);
 
@@ -195,7 +195,7 @@ describe('PbilPanelComponent', () => {
       expect(store.loadStatus()).toBe('ready');
     });
 
-    store.beginEdit('pbil-arb-margin', 'snapshot0830', '-800000000');
+    store.beginEdit('pbilArbMargin', 'snapshot0830', '-800000000');
     store.commitEdit();
     fixture.detectChanges();
 

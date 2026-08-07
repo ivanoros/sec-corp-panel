@@ -2,6 +2,7 @@ import { parseFundingReportResponse } from '../../../data-access/funding-report.
 import { findCalculationMismatches } from '../../../domain/report-calculator';
 import { FundingPanelContractError } from '../../../domain/report-validator';
 import { PBIL_ROW_CATALOG } from '../pbil-row-catalog';
+import { PBIL_PANEL_DEFINITION } from '../pbil-panel.definition';
 import { createPbilReportFixture, PBIL_REPORT_FIXTURE } from './pbil-report.fixture';
 
 describe('PBIL report fixture', () => {
@@ -31,20 +32,20 @@ describe('PBIL report fixture', () => {
     const provisionalRows = PBIL_ROW_CATALOG.filter((row) => 'assumption' in row);
 
     expect(provisionalRows.map(({ id }) => id)).toEqual([
-      'slab-activity-2884',
-      'slab-activity-2147',
-      'arb-mtm-wires',
-      'fx-swaps',
-      'us-treasury-repo-pnv',
-      'equity-jpm',
-      'equity-dis',
-      'equity-e87',
+      'slabActivity2884',
+      'slabActivity2147',
+      'arbMtmWires',
+      'fxSwaps',
+      'usTreasuryRepoPnv',
+      'equityJpm',
+      'equityDis',
+      'equityE87',
     ]);
   });
 
   it('reconciles the source PBIL projected balances exactly', () => {
     const report = createPbilReportFixture();
-    const endOfDay = report.rows.find(({ id }) => id === 'end-of-day');
+    const endOfDay = report.rows.find(({ id }) => id === 'endOfDay');
 
     expect(findCalculationMismatches(report)).toEqual([]);
     expect(endOfDay?.values).toEqual({
@@ -65,7 +66,9 @@ describe('PBIL report fixture', () => {
 
     malformedFixture['version'] = -1;
 
-    expect(() => parseFundingReportResponse(malformedFixture)).toThrow(FundingPanelContractError);
+    expect(() => parseFundingReportResponse(malformedFixture, PBIL_PANEL_DEFINITION)).toThrow(
+      FundingPanelContractError,
+    );
   });
 });
 

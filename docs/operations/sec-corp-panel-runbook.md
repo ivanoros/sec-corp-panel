@@ -49,8 +49,8 @@ GET {apiBaseUrl}/v1/funding-panels/sec-corp?businessDate=YYYY-MM-DD&userId=USER_
 PUT {apiBaseUrl}/v1/funding-panels/sec-corp/{reportId}
 ```
 
-The PUT must receive the current actor `userId` and complete report dataset,
-atomically compare
+The PUT must receive the current actor `userId`, `definitionVersion`, complete
+five-column value matrix, and backend-owned report metadata. It must atomically compare
 `expectedVersion`/`If-Match`, persist the allowed input values, increment the
 version, set the report's audit `userId` to the successful updater, recalculate
 authoritative totals, and return the complete report. A
@@ -65,8 +65,10 @@ stale write must return HTTP 409 or 412. Review the exact payload and response s
 4. Edit an input row in each snapshot column and Opps funding; verify totals
    preview immediately. Confirm calculated rows remain read-only in every period.
 5. Leave each cell; verify no PUT is sent and dirty markers remain.
-6. Select Update; verify one PUT sends the complete report dataset and current
-   `userId`, with matching `expectedVersion` and `If-Match`.
+6. Select Update; verify one PUT sends schema version 2, definition version 1,
+   all five columns, every non-section row value, and current `userId`, with
+   matching `expectedVersion` and `If-Match`. Confirm it sends no label, order,
+   hierarchy, period presentation, or calculation metadata.
 7. Confirm the returned version is higher, its `userId` identifies the updater,
    and the dirty markers clear.
 8. Select Refresh and verify GET uses the same business date and current `userId`.

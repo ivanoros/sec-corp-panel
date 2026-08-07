@@ -77,7 +77,9 @@ Invalid values block navigation until corrected or cancelled with Escape.
 No additional AG Grid modules are registered. The existing client-side row
 model and runtime Enterprise license setup are sufficient.
 
-The REST contract sends the complete report dataset only when Update is
-selected. The body contains the current actor `userId`, `expectedVersion`, and
-the full report; `If-Match` contains the same quoted version. The server returns
-the incremented report version with its audit `userId` set to that actor.
+The REST contract sends all backend-owned report facts only when Update is
+selected. The version 2 body contains the current actor `userId`,
+`definitionVersion`, `expectedVersion`, and five columns of row IDs and values;
+presentation definitions are excluded. `If-Match` contains the same quoted
+version. The server returns the incremented report version with its audit
+`userId` set to that actor.
