@@ -1,0 +1,232 @@
+<main
+  aria-label="Settlement Details panel"
+  class="settlement-details-panel"
+  data-testid="settlement-details-panel"
+>
+  <div
+    aria-label="Settlement Details actions"
+    class="settlement-details-panel__toolbar"
+    role="toolbar"
+  >
+    <button
+      aria-label="Choose visible columns"
+      class="settlement-details-panel__toolbar-action"
+      [class.settlement-details-panel__toolbar-action--active]="columnChooserOpen()"
+      data-testid="choose-settlement-columns"
+      [attr.aria-expanded]="columnChooserOpen()"
+      aria-controls="settlement-details-grid"
+      title="Choose visible columns"
+      type="button"
+      (click)="toggleColumnChooser()"
+    >
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <rect height="16" rx="1" width="16" x="4" y="4" />
+        <path d="M9.35 4v16M14.65 4v16" />
+      </svg>
+    </button>
+    <h1 class="settlement-details-panel__title">Cash and Settlement Details</h1>
+    <div class="settlement-details-panel__status-summary">
+      @if (totalCount() !== null) {
+        <span class="settlement-details-panel__record-count" data-testid="settlement-record-count">
+          {{ totalCount()!.toLocaleString() }} records
+        </span>
+      }
+      @if (isLoading()) {
+        <span aria-live="polite" class="settlement-details-panel__loading">Loading…</span>
+      }
+    </div>
+
+    <button
+      aria-label="Clear all filters"
+      class="settlement-details-panel__toolbar-action"
+      data-testid="clear-settlement-filters"
+      [disabled]="activeFilterCount() === 0"
+      title="Clear all filters"
+      type="button"
+      (click)="clearFilters()"
+    >
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <path d="M4 5h16l-6.3 7.2v5.3l-3.4 1.7v-7L4 5Z" />
+        <path d="m16.5 16.5 4 4m0-4-4 4" />
+      </svg>
+      @if (activeFilterCount() > 0) {
+        <span aria-hidden="true" class="settlement-details-panel__filter-count">
+          {{ activeFilterCount() }}
+        </span>
+      }
+    </button>
+    <button
+      aria-label="Refresh settlement details"
+      class="settlement-details-panel__toolbar-action settlement-details-panel__toolbar-action--primary"
+      data-testid="refresh-settlement-details"
+      title="Refresh settlement details"
+      type="button"
+      (click)="refresh()"
+    >
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <path d="M20 6.75v5h-5" />
+        <path d="M18.45 15.5A7.5 7.5 0 1 1 19.6 9.6L20 11.75" />
+      </svg>
+    </button>
+  </div>
+
+  <div aria-label="Settlement search criteria" class="settlement-details-panel__criteria">
+    <label class="settlement-details-panel__criterion">
+      <span>Manager</span>
+      <input
+        aria-label="Manager filter"
+        autocomplete="off"
+        placeholder="All"
+        type="search"
+        [value]="toolbarFilters().managerName"
+        (input)="updateToolbarTextFilter('managerName', $event)"
+      />
+    </label>
+    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--date">
+      <span>Settlement Date</span>
+      <input
+        aria-label="Settlement Date filter"
+        required
+        type="date"
+        [value]="settlementDate()"
+        (change)="updateSettlementDate($event)"
+      />
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Settlement Mode</span>
+      <select
+        aria-label="Settlement Mode filter"
+        [value]="toolbarFilters().settlementMode"
+        (change)="updateToolbarSelectFilter('settlementMode', $event)"
+      >
+        <option value="">All</option>
+        @for (option of settlementModeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--wide">
+      <span>Activity Type</span>
+      <select
+        aria-label="Activity Type filter"
+        [value]="toolbarFilters().activityType"
+        (change)="updateToolbarSelectFilter('activityType', $event)"
+      >
+        <option value="">All</option>
+        @for (option of activityTypeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Settlement Status</span>
+      <select
+        aria-label="Settlement Status filter"
+        [value]="toolbarFilters().settlementStatus"
+        (change)="updateToolbarSelectFilter('settlementStatus', $event)"
+      >
+        <option value="">All</option>
+        @for (option of settlementStatusOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--compact">
+      <span>Blotter Code</span>
+      <input
+        aria-label="Blotter Code filter"
+        autocomplete="off"
+        placeholder="All"
+        type="search"
+        [value]="toolbarFilters().blotterCode"
+        (input)="updateToolbarTextFilter('blotterCode', $event)"
+      />
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Source</span>
+      <select
+        aria-label="Source filter"
+        [value]="toolbarFilters().source"
+        (change)="updateToolbarSelectFilter('source', $event)"
+      >
+        <option value="">All</option>
+        @for (option of sourceOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Trade Type</span>
+      <select
+        aria-label="Trade Type filter"
+        [value]="toolbarFilters().tradeType"
+        (change)="updateToolbarSelectFilter('tradeType', $event)"
+      >
+        <option value="">All</option>
+        @for (option of tradeTypeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Trade ID</span>
+      <input
+        aria-label="Trade ID filter"
+        autocomplete="off"
+        placeholder="All"
+        type="search"
+        [value]="toolbarFilters().tradeId"
+        (input)="updateToolbarTextFilter('tradeId', $event)"
+      />
+    </label>
+    <label class="settlement-details-panel__criterion">
+      <span>Product</span>
+      <input
+        aria-label="Product filter"
+        autocomplete="off"
+        placeholder="All"
+        type="search"
+        [value]="toolbarFilters().productId"
+        (input)="updateToolbarTextFilter('productId', $event)"
+      />
+    </label>
+  </div>
+
+  <ag-grid-angular
+    id="settlement-details-grid"
+    aria-label="Cash and Settlement Details"
+    class="settlement-details-grid"
+    data-testid="settlement-details-grid"
+    [animateRows]="false"
+    [blockLoadDebounceMillis]="150"
+    [cacheBlockSize]="100"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [enableCellTextSelection]="true"
+    [ensureDomOrder]="true"
+    [getRowId]="getRowId"
+    [headerHeight]="32"
+    [maxBlocksInCache]="5"
+    [pagination]="true"
+    [paginationPageSize]="100"
+    [paginationPageSizeSelector]="pageSizeOptions"
+    rowModelType="serverSide"
+    [rowHeight]="24"
+    [serverSideDatasource]="dataSource"
+    [sideBar]="sideBar"
+    [suppressCellFocus]="true"
+    [suppressContextMenu]="true"
+    [theme]="theme"
+    [tooltipShowDelay]="350"
+    (filterChanged)="onFilterChanged($event)"
+    (gridReady)="onGridReady($event)"
+    (toolPanelVisibleChanged)="onToolPanelVisibleChanged($event)"
+  ></ag-grid-angular>
+
+  @if (errorMessage(); as message) {
+    <div class="settlement-details-panel__error" data-testid="settlement-error" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" (click)="refresh()">Try again</button>
+    </div>
+  }
+</main>

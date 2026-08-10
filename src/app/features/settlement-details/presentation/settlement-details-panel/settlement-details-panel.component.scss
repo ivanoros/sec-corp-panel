@@ -1,0 +1,307 @@
+:host,
+.settlement-details-panel {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.settlement-details-panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: 36px 46px minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  background: #1d2021;
+  color: #eef2f2;
+}
+
+.settlement-details-panel__toolbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 4px 8px;
+  border-bottom: 1px solid #4d5556;
+  background: #292d2e;
+  font-size: 11px;
+}
+
+.settlement-details-panel__status-summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+  min-width: 0;
+  color: #aeb8b7;
+  white-space: nowrap;
+}
+
+.settlement-details-panel__title {
+  position: absolute;
+  left: 50%;
+  max-width: 45%;
+  margin: 0;
+  overflow: hidden;
+  color: #a9ded9;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.settlement-details-panel__criteria {
+  z-index: 2;
+  display: flex;
+  align-items: end;
+  gap: 5px;
+  min-width: 0;
+  padding: 3px 6px 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid #4d5556;
+  background: #222627;
+  scrollbar-color: #656a6b #242627;
+  scrollbar-width: thin;
+}
+
+.settlement-details-panel__criterion {
+  display: grid;
+  flex: 0 0 112px;
+  grid-template-rows: 12px 24px;
+  gap: 2px;
+  min-width: 0;
+  color: #b9c3c2;
+  font-size: 9px;
+  line-height: 12px;
+}
+
+.settlement-details-panel__criterion--compact {
+  flex-basis: 92px;
+}
+
+.settlement-details-panel__criterion--date {
+  flex-basis: 126px;
+}
+
+.settlement-details-panel__criterion--wide {
+  flex-basis: 148px;
+}
+
+.settlement-details-panel__criterion input,
+.settlement-details-panel__criterion select {
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  padding: 2px 6px;
+  border: 1px solid #515a5b;
+  border-radius: 2px;
+  outline: 0;
+  background: #171a1b;
+  color: #e9eeee;
+  font: 10px/1.2 inherit;
+}
+
+.settlement-details-panel__criterion input:focus,
+.settlement-details-panel__criterion select:focus {
+  border-color: #79c7c1;
+  box-shadow: inset 0 0 0 1px rgb(121 199 193 / 22%);
+}
+
+.settlement-details-panel__criterion input::placeholder {
+  color: #778080;
+}
+
+.settlement-details-panel__record-count {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #315b59;
+  color: #d9ecea;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-details-panel__loading {
+  color: #83c7c2;
+}
+
+.settlement-details-panel__toolbar-action {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  width: 27px;
+  height: 27px;
+  padding: 5px;
+  place-items: center;
+  border: 1px solid #687575;
+  border-radius: 2px;
+  background: #343a3b;
+  color: #e6eceb;
+  cursor: pointer;
+}
+
+.settlement-details-panel__toolbar-action--primary {
+  border-color: #5ba39e;
+  background: #2f6562;
+}
+
+.settlement-details-panel__toolbar-action--active {
+  border-color: #79c7c1;
+  background: #376b68;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgb(121 199 193 / 22%);
+}
+
+.settlement-details-panel__toolbar-action:hover:not(:disabled) {
+  background: #465051;
+}
+
+.settlement-details-panel__toolbar-action--primary:hover:not(:disabled) {
+  background: #39736f;
+}
+
+.settlement-details-panel__toolbar-action:focus-visible {
+  outline: 2px solid #8bd0ca;
+  outline-offset: 2px;
+}
+
+.settlement-details-panel__toolbar-action:disabled {
+  border-color: #444b4c;
+  background: #292d2e;
+  color: #777f80;
+  cursor: not-allowed;
+}
+
+.settlement-details-panel__toolbar-action svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.settlement-details-panel__filter-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  place-items: center;
+  border: 1px solid #292d2e;
+  border-radius: 8px;
+  background: #65b7b1;
+  color: #101515;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.settlement-details-grid {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  .ag-root-wrapper {
+    border: 0;
+    background: #1b1d1e;
+  }
+
+  .ag-header-cell-text,
+  .ag-floating-filter-input {
+    font-size: 11px;
+  }
+
+  .ag-floating-filter-body input {
+    min-width: 0;
+    color: #e7eceb;
+  }
+
+  .ag-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ag-row-even .ag-cell {
+    background: #1b1d1e;
+  }
+
+  .ag-row-odd .ag-cell {
+    background: #252728;
+  }
+
+  .ag-row-hover .ag-cell {
+    background: #2d3d3c;
+  }
+
+  .ag-paging-panel {
+    border-top-color: #45494a;
+    background: #292d2e;
+    color: #dce3e2;
+    font-size: 11px;
+  }
+
+  .ag-side-bar {
+    border-left-color: #4d5556;
+  }
+
+  .ag-tool-panel-wrapper {
+    border-left-color: #4d5556;
+    background: #222526;
+  }
+
+  .ag-column-select-header {
+    border-bottom-color: #45494a;
+    background: #303536;
+  }
+
+  .ag-body-vertical-scroll-viewport,
+  .ag-body-horizontal-scroll-viewport {
+    scrollbar-color: #656a6b #242627;
+    scrollbar-width: thin;
+  }
+}
+
+.settlement-details-panel__error {
+  position: absolute;
+  z-index: 5;
+  right: 10px;
+  bottom: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(560px, calc(100% - 20px));
+  padding: 6px 9px;
+  border: 1px solid #a65360;
+  border-radius: 2px;
+  background: rgb(54 27 32 / 97%);
+  color: #ffc0c8;
+  font-size: 11px;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 42%);
+}
+
+.settlement-details-panel__error button {
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .settlement-details-panel__status-summary {
+    display: none;
+  }
+
+  .settlement-details-panel__title {
+    max-width: 62%;
+  }
+}

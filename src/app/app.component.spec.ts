@@ -55,4 +55,17 @@ describe('AppComponent', () => {
 
     expect(compiled.querySelector('[data-testid="pbil-panel"]')).not.toBeNull();
   });
+
+  it('should mount the Settlement Details panel route', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/settlement-details');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('[data-testid="settlement-details-panel"]')).not.toBeNull();
+  });
 });

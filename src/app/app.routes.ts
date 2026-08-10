@@ -21,6 +21,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'settlement-details',
+    loadComponent: () =>
+      import('./features/settlement-details/presentation/settlement-details-panel/settlement-details-panel.component').then(
+        ({ SettlementDetailsPanelComponent }) => SettlementDetailsPanelComponent,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'sec-corp',
   },
