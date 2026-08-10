@@ -29,14 +29,26 @@
 }
 
 .funding-panel-surface__toolbar-action {
-  min-width: 68px;
-  padding: 3px 10px;
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  place-items: center;
   border: 1px solid #687575;
   border-radius: 2px;
   background: #343a3b;
   color: #e6eceb;
-  font: 600 11px/18px inherit;
   cursor: pointer;
+}
+
+.funding-panel-surface__toolbar-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .funding-panel-surface__toolbar-action--primary {

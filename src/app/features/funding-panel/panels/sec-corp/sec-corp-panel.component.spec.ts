@@ -39,8 +39,20 @@ describe('SecCorpPanelComponent', () => {
       expect(panel?.dataset['loadStatus']).toBe('ready');
       expect(fixture.componentInstance.store.viewModel()?.rows).toHaveLength(37);
       expect(fixture.debugElement.query(By.directive(FundingGridComponent))).not.toBeNull();
-      expect(panel?.querySelector('[data-testid="update-report"]')).not.toBeNull();
-      expect(panel?.querySelector('[data-testid="refresh-report"]')).not.toBeNull();
+      expect(panel?.querySelector('[data-testid="update-report"]')).toMatchObject({
+        ariaLabel: 'Update report',
+        title: 'Update report',
+      });
+      expect(
+        panel?.querySelector('[data-testid="update-report"] [data-icon="save"]'),
+      ).not.toBeNull();
+      expect(panel?.querySelector('[data-testid="refresh-report"]')).toMatchObject({
+        ariaLabel: 'Refresh report',
+        title: 'Refresh report',
+      });
+      expect(
+        panel?.querySelector('[data-testid="refresh-report"] [data-icon="refresh"]'),
+      ).not.toBeNull();
     });
   });
 

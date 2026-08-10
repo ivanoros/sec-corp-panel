@@ -9,20 +9,42 @@
     <button
       class="funding-panel-surface__toolbar-action funding-panel-surface__toolbar-action--primary"
       data-testid="update-report"
+      aria-label="Update report"
+      title="Update report"
       type="button"
       [disabled]="!store.canUpdate()"
       (click)="updateReport()"
     >
-      Update
+      <svg
+        aria-hidden="true"
+        class="funding-panel-surface__toolbar-icon"
+        data-icon="save"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path d="M5 3.75h11.25L20.25 7v13.25H3.75V3.75H5Z" />
+        <path d="M7.25 3.75v5.5h8.5v-5.5M7.25 20.25v-7h9.5v7" />
+      </svg>
     </button>
     <button
       class="funding-panel-surface__toolbar-action"
       data-testid="refresh-report"
+      aria-label="Refresh report"
+      title="Refresh report"
       type="button"
       [disabled]="!store.canRequestRefresh()"
       (click)="requestRefresh()"
     >
-      Refresh
+      <svg
+        aria-hidden="true"
+        class="funding-panel-surface__toolbar-icon"
+        data-icon="refresh"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path d="M20 6.75v5h-5" />
+        <path d="M18.45 15.5A7.5 7.5 0 1 1 19.6 9.6L20 11.75" />
+      </svg>
     </button>
   </div>
   @if (store.loadStatus() === 'loading') {
