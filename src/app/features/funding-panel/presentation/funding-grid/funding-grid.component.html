@@ -5,6 +5,7 @@
   [attr.aria-describedby]="descriptionId"
   [attr.aria-label]="ariaLabel()"
   class="funding-grid"
+  [class.funding-grid--save-flash]="saveFlashActive()"
   data-testid="funding-grid"
   [animateRows]="false"
   [columnDefs]="columnDefs()"
@@ -26,4 +27,5 @@
   [suppressMovableColumns]="true"
   [theme]="theme"
   (gridReady)="onGridReady($event)"
+  (modelUpdated)="onModelUpdated()"
 ></ag-grid-angular>

@@ -46,6 +46,11 @@ export interface FundingEditableCellAddress {
   readonly rowId: string;
 }
 
+export interface FundingSaveConfirmation {
+  readonly cells: readonly FundingEditableCellAddress[];
+  readonly revision: number;
+}
+
 const EMPTY_EDITS: DirtyFundingCells = Object.freeze({});
 
 @Injectable()
@@ -60,6 +65,11 @@ export class FundingPanelStore {
   private readonly queryState = signal<FundingReportQuery | null>(null);
   private readonly loadStatusState = signal<FundingLoadStatus>('idle');
   private readonly saveStatusState = signal<PanelHostState['saveStatus']>('idle');
+  private readonly calculationRevisionState = signal(0);
+  private readonly saveConfirmationState = signal<FundingSaveConfirmation>({
+    cells: [],
+    revision: 0,
+  });
   private readonly errorMessageState = signal<string | null>(null);
   private readonly conflictState = signal<FundingVersionConflict | null>(null);
 
@@ -73,11 +83,16 @@ export class FundingPanelStore {
   readonly errorMessage = this.errorMessageState.asReadonly();
   readonly conflict = this.conflictState.asReadonly();
   readonly activeEdit = this.activeEditState.asReadonly();
+  readonly calculationRevision = this.calculationRevisionState.asReadonly();
+  readonly saveConfirmation = this.saveConfirmationState.asReadonly();
   private readonly hasCommittedEdits = computed(() => hasEdits(this.editsState()));
   readonly isDirty = computed(
     () =>
       this.hasCommittedEdits() ||
       isActiveEditDirty(this.activeEditState(), this.editsState(), this.serverReportState()),
+  );
+  readonly unsavedChangeCount = computed(() =>
+    countUnsavedCells(this.editsState(), this.activeEditState(), this.serverReportState()),
   );
   readonly hasInvalidEdit = computed(() => this.activeEditState()?.validation.isValid === false);
   readonly canUpdate = computed(
@@ -114,6 +129,7 @@ export class FundingPanelStore {
           report,
           this.editsState(),
           toActiveFundingCell(this.activeEditState()),
+          this.serverReportState() ?? report,
         );
   });
   readonly hostState = computed<PanelHostState>(() => ({
@@ -213,19 +229,19 @@ export class FundingPanelStore {
       activeEdit.periodId,
     );
     const mustPreserveExplicitIntent = this.updateRequestActive;
+    const currentEdits = this.editsState();
     const nextEdits =
       !mustPreserveExplicitIntent && serverValue === activeEdit.validation.value
-        ? removeEdit(this.editsState(), activeEdit.rowId, activeEdit.periodId)
-        : setEdit(
-            this.editsState(),
-            activeEdit.rowId,
-            activeEdit.periodId,
-            activeEdit.validation.value,
-          );
+        ? removeEdit(currentEdits, activeEdit.rowId, activeEdit.periodId)
+        : setEdit(currentEdits, activeEdit.rowId, activeEdit.periodId, activeEdit.validation.value);
 
     this.editsState.set(nextEdits);
     this.activeEditState.set(null);
     this.errorMessageState.set(null);
+
+    if (nextEdits !== currentEdits) {
+      this.calculationRevisionState.update((revision) => revision + 1);
+    }
 
     if (!hasEdits(nextEdits)) {
       this.saveStatusState.set('idle');
@@ -280,7 +296,7 @@ export class FundingPanelStore {
     this.updateRequestActive = true;
     this.saveStatusState.set('saving');
     this.errorMessageState.set(null);
-    void this.performUpdate(report, query.userId);
+    void this.performUpdate(report, query.userId, toDirtyCellAddresses(this.editsState()));
     return true;
   }
 
@@ -363,7 +379,11 @@ export class FundingPanelStore {
     }
   }
 
-  private async performUpdate(report: FundingReport, userId: string): Promise<void> {
+  private async performUpdate(
+    report: FundingReport,
+    userId: string,
+    submittedCells: readonly FundingEditableCellAddress[],
+  ): Promise<void> {
     try {
       const savedReport = await firstValueFrom(
         this.gateway
@@ -376,7 +396,20 @@ export class FundingPanelStore {
       }
 
       this.serverReportState.set(savedReport);
-      this.editsState.update((edits) => rebaseEdits(edits, savedReport));
+      const rebasedEdits = rebaseEdits(this.editsState(), savedReport);
+      const confirmedCells = submittedCells.filter(
+        ({ periodId, rowId }) => rebasedEdits[rowId]?.[periodId] === undefined,
+      );
+
+      this.editsState.set(rebasedEdits);
+
+      if (confirmedCells.length > 0) {
+        this.saveConfirmationState.update(({ revision }) => ({
+          cells: confirmedCells,
+          revision: revision + 1,
+        }));
+      }
+
       this.conflictState.set(null);
       this.saveStatusState.set(this.hasCommittedEdits() ? 'idle' : 'saved');
     } catch (error: unknown) {
@@ -537,6 +570,36 @@ function isActiveEditDirty(
 
 function hasEdits(edits: DirtyFundingCells): boolean {
   return Object.keys(edits).length > 0;
+}
+
+function countUnsavedCells(
+  edits: DirtyFundingCells,
+  activeEdit: ActiveEdit | null,
+  serverReport: FundingReport | null,
+): number {
+  const committedCount = Object.values(edits).reduce(
+    (count, rowEdits) => count + Object.keys(rowEdits).length,
+    0,
+  );
+
+  if (
+    !isActiveEditDirty(activeEdit, edits, serverReport) ||
+    activeEdit === null ||
+    edits[activeEdit.rowId]?.[activeEdit.periodId] !== undefined
+  ) {
+    return committedCount;
+  }
+
+  return committedCount + 1;
+}
+
+function toDirtyCellAddresses(edits: DirtyFundingCells): readonly FundingEditableCellAddress[] {
+  return Object.entries(edits).flatMap(([rowId, rowEdits]) =>
+    Object.keys(rowEdits).map((periodId) => ({
+      periodId: periodId as EditablePeriodId,
+      rowId,
+    })),
+  );
 }
 
 function toErrorMessage(error: unknown, fallback: string): string {

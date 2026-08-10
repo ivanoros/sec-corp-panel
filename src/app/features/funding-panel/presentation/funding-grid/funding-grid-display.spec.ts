@@ -5,6 +5,7 @@ import {
   FUNDING_GRID_CELL_CLASSES,
   FUNDING_GRID_ROW_CLASSES,
   formatFundingAmount,
+  formatFundingCellTooltip,
   formatFundingRowLabel,
   getFundingRowClass,
   getFundingValueCellClasses,
@@ -75,6 +76,27 @@ describe('funding grid display policy', () => {
         FUNDING_GRID_CELL_CLASSES.invalid,
       ]),
     );
+  });
+
+  it('describes the original and current values for a dirty cell', () => {
+    const cell = {
+      ...requireRow(rows, 'occ').cells.snapshot0830,
+      dirty: true,
+      originalValue: asDecimalString('-308824714.48'),
+      value: asDecimalString('123.00'),
+    };
+
+    expect(formatFundingCellTooltip('OCC', '8:30', cell)).toBe(
+      ['Modified — not saved', 'OCC · 8:30', 'Original: (308,824,714.48)', 'Current: 123.00'].join(
+        '\n',
+      ),
+    );
+  });
+
+  it('does not show a modification tooltip for an unchanged cell', () => {
+    expect(
+      formatFundingCellTooltip('OCC', '8:30', requireRow(rows, 'occ').cells.snapshot0830),
+    ).toBeNull();
   });
 });
 

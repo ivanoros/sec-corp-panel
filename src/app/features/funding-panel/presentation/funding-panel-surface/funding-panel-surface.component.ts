@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   type OnInit,
@@ -26,6 +27,15 @@ export class FundingPanelSurfaceComponent implements OnInit {
   readonly store = inject(FundingPanelStore);
   readonly confirmingConflictDiscard = signal(false);
   readonly confirmingRefreshDiscard = signal(false);
+  readonly updateActionLabel = computed(() => {
+    const count = this.store.unsavedChangeCount();
+
+    if (count === 0) {
+      return 'Update report';
+    }
+
+    return `Update report (${count} unsaved ${count === 1 ? 'change' : 'changes'})`;
+  });
   private readonly runtimeConfig = inject(APP_RUNTIME_CONFIG);
 
   constructor() {

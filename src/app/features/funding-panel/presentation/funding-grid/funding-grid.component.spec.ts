@@ -4,11 +4,15 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { GridReadyEvent } from 'ag-grid-community';
 
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
+import { asDecimalString } from '../../domain/decimal-value';
+import { recalculateFundingReport } from '../../domain/report-calculator';
 import { createSecCorpReportFixture } from '../../panels/sec-corp/mocks/sec-corp-report.fixture';
 import { type FundingGridRowViewModel, toFundingGridViewModel } from '../funding-grid.viewmodel';
 import {
   FundingGridComponent,
   createFundingColumnDefs,
+  findChangedCalculatedCells,
+  findDirtyCellAddresses,
   isFundingGridCellEditable,
 } from './funding-grid.component';
 
@@ -102,6 +106,42 @@ describe('FundingGridComponent', () => {
     expect(columns.find(({ colId }) => colId === 'snapshot0830')?.cellEditor).toBeDefined();
     expect(columns.find(({ colId }) => colId === 'live')?.cellEditor).toBeUndefined();
     expect(columns.find(({ colId }) => colId === 'opportunityFunding')?.cellEditor).toBeDefined();
+  });
+
+  it('separates persistent user edits from transient calculated changes', () => {
+    const baselineReport = createSecCorpReportFixture();
+    const previewReport = recalculateFundingReport({
+      ...baselineReport,
+      rows: baselineReport.rows.map((row) =>
+        row.id === 'occ'
+          ? {
+              ...row,
+              values: { ...row.values, snapshot0830: asDecimalString('-300000000.00') },
+            }
+          : row,
+      ),
+    });
+    const previous = toFundingGridViewModel(baselineReport, {}, null, baselineReport);
+    const current = toFundingGridViewModel(
+      previewReport,
+      { occ: { snapshot0830: asDecimalString('-300000000.00') } },
+      null,
+      baselineReport,
+    );
+
+    expect(findDirtyCellAddresses(current.rows)).toEqual([
+      { periodId: 'snapshot0830', rowId: 'occ' },
+    ]);
+    expect(findChangedCalculatedCells(previous.rows, current.rows)).toEqual(
+      expect.arrayContaining([
+        { periodId: 'snapshot0830', rowId: 'totalMargin' },
+        { periodId: 'snapshot0830', rowId: 'endOfDay' },
+      ]),
+    );
+    expect(findChangedCalculatedCells(previous.rows, current.rows)).not.toContainEqual({
+      periodId: 'snapshot0830',
+      rowId: 'occ',
+    });
   });
 });
 

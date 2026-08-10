@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ViewEncapsulation,
   computed,
   effect,
+  inject,
   input,
   signal,
 } from '@angular/core';
@@ -20,7 +22,9 @@ import type {
   ValueGetterParams,
 } from 'ag-grid-community';
 
+import type { FundingSaveConfirmation } from '../../application/funding-panel.store';
 import type { ReportPeriod } from '../../domain/funding-report';
+import { PERIOD_IDS, type PeriodId } from '../../domain/funding-report';
 import {
   type FundingGridCellViewModel,
   type FundingGridRowViewModel,
@@ -28,6 +32,7 @@ import {
 } from '../funding-grid.viewmodel';
 import {
   FUNDING_GRID_CELL_CLASSES,
+  formatFundingCellTooltip,
   formatFundingAmount,
   formatFundingRowLabel,
   getFundingRowClass,
@@ -38,6 +43,11 @@ import { FUNDING_GRID_THEME } from './funding-grid.theme';
 
 type FundingColumnValue = FundingGridCellViewModel | string | null;
 type FundingColumnDef = ColDef<FundingGridRowViewModel, FundingColumnValue>;
+
+export interface FundingGridCellAddress {
+  readonly periodId: PeriodId;
+  readonly rowId: string;
+}
 
 let fundingGridInstanceSequence = 0;
 
@@ -51,9 +61,21 @@ let fundingGridInstanceSequence = 0;
   encapsulation: ViewEncapsulation.None,
 })
 export class FundingGridComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly gridApi = signal<GridApi<FundingGridRowViewModel> | null>(null);
+  private pendingCalculatedCells: readonly FundingGridCellAddress[] = [];
+  private pendingSavedCells: readonly FundingGridCellAddress[] = [];
+  private settledRows: readonly FundingGridRowViewModel[] | null = null;
+  private previousCalculationRevision = 0;
+  private previousSaveRevision = 0;
+  private saveFlashTimer: ReturnType<typeof setTimeout> | null = null;
+  private flashScheduled = false;
+  private destroyed = false;
 
   readonly viewModel = input.required<FundingGridViewModel>();
+  readonly calculationRevision = input(0);
+  readonly saveConfirmation = input<FundingSaveConfirmation>({ cells: [], revision: 0 });
+  readonly saveFlashActive = signal(false);
   readonly descriptionId = `funding-grid-description-${++fundingGridInstanceSequence}`;
 
   readonly rowData = computed(() => [...this.viewModel().rows]);
@@ -100,10 +122,116 @@ export class FundingGridComponent {
       api.setGridAriaProperty('label', this.ariaLabel());
       api.setGridAriaProperty('describedby', this.descriptionId);
     });
+
+    effect(() => {
+      this.captureVisualChanges(
+        this.rowData(),
+        this.calculationRevision(),
+        this.saveConfirmation(),
+      );
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
+
+      if (this.saveFlashTimer !== null) {
+        clearTimeout(this.saveFlashTimer);
+      }
+    });
   }
 
   onGridReady(event: GridReadyEvent<FundingGridRowViewModel>): void {
     this.gridApi.set(event.api);
+  }
+
+  onModelUpdated(): void {
+    if (this.pendingCalculatedCells.length > 0) {
+      this.flashCells(this.pendingCalculatedCells, 'calculated');
+      this.pendingCalculatedCells = [];
+    }
+
+    if (this.pendingSavedCells.length > 0) {
+      this.flashCells(this.pendingSavedCells, 'saved');
+      this.pendingSavedCells = [];
+    }
+  }
+
+  private captureVisualChanges(
+    rows: readonly FundingGridRowViewModel[],
+    calculationRevision: number,
+    saveConfirmation: FundingSaveConfirmation,
+  ): void {
+    if (this.settledRows === null) {
+      this.settledRows = rows;
+      this.previousCalculationRevision = calculationRevision;
+    } else if (calculationRevision !== this.previousCalculationRevision) {
+      this.pendingCalculatedCells = findChangedCalculatedCells(this.settledRows, rows);
+      this.settledRows = rows;
+      this.previousCalculationRevision = calculationRevision;
+      this.schedulePendingFlashes();
+    } else if (!hasActivePreview(rows)) {
+      this.settledRows = rows;
+    }
+
+    if (saveConfirmation.revision !== this.previousSaveRevision) {
+      this.pendingSavedCells = saveConfirmation.cells;
+      this.previousSaveRevision = saveConfirmation.revision;
+      this.schedulePendingFlashes();
+    }
+  }
+
+  private schedulePendingFlashes(): void {
+    if (this.flashScheduled) {
+      return;
+    }
+
+    this.flashScheduled = true;
+    queueMicrotask(() => {
+      this.flashScheduled = false;
+
+      if (!this.destroyed) {
+        this.onModelUpdated();
+      }
+    });
+  }
+
+  private flashCells(
+    addresses: readonly FundingGridCellAddress[],
+    mode: 'calculated' | 'saved',
+  ): void {
+    const api = this.gridApi();
+
+    if (api === null) {
+      return;
+    }
+
+    if (mode === 'saved') {
+      this.saveFlashActive.set(true);
+
+      if (this.saveFlashTimer !== null) {
+        clearTimeout(this.saveFlashTimer);
+      }
+
+      this.saveFlashTimer = setTimeout(() => {
+        this.saveFlashActive.set(false);
+        this.saveFlashTimer = null;
+      }, 900);
+    } else {
+      this.saveFlashActive.set(false);
+    }
+
+    for (const { periodId, rowId } of addresses) {
+      const rowNode = api.getRowNode(rowId);
+
+      if (rowNode !== undefined) {
+        api.flashCells({
+          columns: [periodId],
+          fadeDuration: 350,
+          flashDuration: 450,
+          rowNodes: [rowNode],
+        });
+      }
+    }
   }
 }
 
@@ -148,6 +276,10 @@ function createPeriodColumn(period: ReportPeriod): FundingColumnDef {
       isFundingCell(value)
         ? getFundingValueCellClasses(value)
         : [FUNDING_GRID_CELL_CLASSES.numeric],
+    tooltipValueGetter: ({ data, value }): string | null =>
+      data === undefined || !isFundingCell(value)
+        ? null
+        : formatFundingCellTooltip(data.label, period.label, value),
     headerClass: 'funding-grid__header--numeric',
     ...(period.editable
       ? {
@@ -155,6 +287,37 @@ function createPeriodColumn(period: ReportPeriod): FundingColumnDef {
         }
       : {}),
   };
+}
+
+export function findChangedCalculatedCells(
+  previousRows: readonly FundingGridRowViewModel[],
+  currentRows: readonly FundingGridRowViewModel[],
+): readonly FundingGridCellAddress[] {
+  const previousById = new Map(previousRows.map((row) => [row.id, row]));
+
+  return currentRows.flatMap((row) => {
+    if (row.valueMode !== 'calculated') {
+      return [];
+    }
+
+    const previousRow = previousById.get(row.id);
+
+    return PERIOD_IDS.flatMap((periodId) =>
+      previousRow?.cells[periodId].value === row.cells[periodId].value
+        ? []
+        : [{ periodId, rowId: row.id }],
+    );
+  });
+}
+
+export function findDirtyCellAddresses(
+  rows: readonly FundingGridRowViewModel[],
+): readonly FundingGridCellAddress[] {
+  return rows.flatMap((row) =>
+    PERIOD_IDS.flatMap((periodId) =>
+      row.cells[periodId].dirty ? [{ periodId, rowId: row.id }] : [],
+    ),
+  );
 }
 
 export function isFundingGridCellEditable(
@@ -176,4 +339,8 @@ function hasSameColumnLayout(previous: FundingColumnDef[], current: FundingColum
         column.colId === current[index]?.colId && column.headerName === current[index]?.headerName,
     )
   );
+}
+
+function hasActivePreview(rows: readonly FundingGridRowViewModel[]): boolean {
+  return rows.some((row) => PERIOD_IDS.some((periodId) => row.cells[periodId].preview));
 }

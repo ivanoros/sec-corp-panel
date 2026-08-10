@@ -48,6 +48,23 @@ export function formatFundingRowLabel(row: FundingGridRowViewModel): string {
   return `${'  '.repeat(row.depth - 1)}- ${row.label}`;
 }
 
+export function formatFundingCellTooltip(
+  rowLabel: string,
+  periodLabel: string,
+  cell: FundingGridCellViewModel,
+): string | null {
+  if (!cell.dirty) {
+    return null;
+  }
+
+  return [
+    'Modified — not saved',
+    `${rowLabel} · ${periodLabel}`,
+    `Original: ${formatTooltipAmount(cell.originalValue)}`,
+    `Current: ${formatTooltipAmount(cell.value)}`,
+  ].join('\n');
+}
+
 export function getFundingRowClass(row: FundingGridRowViewModel): string {
   switch (row.kind) {
     case 'opening-balance':
@@ -94,4 +111,8 @@ export class FundingGridDisplayError extends Error {
     super(message);
     this.name = 'FundingGridDisplayError';
   }
+}
+
+function formatTooltipAmount(value: FundingGridValue): string {
+  return value === null ? 'Unavailable' : formatFundingAmount(value);
 }

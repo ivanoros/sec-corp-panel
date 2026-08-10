@@ -15,6 +15,7 @@ export type FundingGridValue = DecimalString | null;
 export interface FundingGridCellViewModel {
   readonly dirty: boolean;
   readonly editable: boolean;
+  readonly originalValue: FundingGridValue;
   readonly preview: boolean;
   readonly validationMessage: string | null;
   readonly value: FundingGridValue;
@@ -59,7 +60,10 @@ export function toFundingGridViewModel(
   report: FundingReport,
   dirtyCells: DirtyFundingCells,
   activeCell: ActiveFundingCell | null,
+  baselineReport: FundingReport = report,
 ): FundingGridViewModel {
+  const baselineRows = new Map(baselineReport.rows.map((row) => [row.id, row]));
+
   return {
     asOf: report.asOf,
     businessDate: report.businessDate,
@@ -82,6 +86,7 @@ export function toFundingGridViewModel(
                 row.valueMode === 'input' &&
                 report.permissions.canEdit &&
                 report.permissions.canSave,
+              originalValue: baselineRows.get(row.id)?.values[periodId] ?? row.values[periodId],
               preview: isActive,
               validationMessage: isActive ? activeCell.validationMessage : null,
               value: row.values[periodId],

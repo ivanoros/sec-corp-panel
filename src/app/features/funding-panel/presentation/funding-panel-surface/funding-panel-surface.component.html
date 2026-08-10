@@ -9,8 +9,8 @@
     <button
       class="funding-panel-surface__toolbar-action funding-panel-surface__toolbar-action--primary"
       data-testid="update-report"
-      aria-label="Update report"
-      title="Update report"
+      [attr.aria-label]="updateActionLabel()"
+      [attr.title]="updateActionLabel()"
       type="button"
       [disabled]="!store.canUpdate()"
       (click)="updateReport()"
@@ -25,6 +25,11 @@
         <path d="M5 3.75h11.25L20.25 7v13.25H3.75V3.75H5Z" />
         <path d="M7.25 3.75v5.5h8.5v-5.5M7.25 20.25v-7h9.5v7" />
       </svg>
+      @if (store.unsavedChangeCount() > 0) {
+        <span aria-hidden="true" class="funding-panel-surface__change-count">
+          {{ store.unsavedChangeCount() }}
+        </span>
+      }
     </button>
     <button
       class="funding-panel-surface__toolbar-action"
@@ -47,6 +52,13 @@
       </svg>
     </button>
   </div>
+  <span aria-live="polite" class="funding-panel-surface__visually-hidden">
+    @if (store.unsavedChangeCount() === 1) {
+      1 unsaved change.
+    } @else if (store.unsavedChangeCount() > 1) {
+      {{ store.unsavedChangeCount() }} unsaved changes.
+    }
+  </span>
   @if (store.loadStatus() === 'loading') {
     <div aria-live="polite" class="funding-panel-surface__status" data-testid="loading-state">
       <span aria-hidden="true" class="funding-panel-surface__spinner"></span>
@@ -60,7 +72,11 @@
       </button>
     </div>
   } @else if (store.viewModel(); as viewModel) {
-    <app-funding-grid [viewModel]="viewModel" />
+    <app-funding-grid
+      [calculationRevision]="store.calculationRevision()"
+      [saveConfirmation]="store.saveConfirmation()"
+      [viewModel]="viewModel"
+    />
     @if (confirmingRefreshDiscard()) {
       <div
         class="funding-panel-surface__save-state funding-panel-surface__save-state--warning"

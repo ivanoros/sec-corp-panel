@@ -29,6 +29,7 @@
 }
 
 .funding-panel-surface__toolbar-action {
+  position: relative;
   display: inline-grid;
   width: 26px;
   height: 26px;
@@ -39,6 +40,35 @@
   background: #343a3b;
   color: #e6eceb;
   cursor: pointer;
+}
+
+.funding-panel-surface__change-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  place-items: center;
+  border: 1px solid #292d2e;
+  border-radius: 8px;
+  background: #e2b246;
+  color: #171a1a;
+  font: 700 9px/1 inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.funding-panel-surface__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .funding-panel-surface__toolbar-icon {

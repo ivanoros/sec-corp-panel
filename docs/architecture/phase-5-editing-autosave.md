@@ -46,12 +46,19 @@ Presentation classes are derived centrally from `FundingGridCellViewModel`.
 
 - Editable cells show a restrained hover affordance.
 - The active preview has a teal inset border.
-- Committed unsaved cells show a small amber dirty marker.
+- Committed unsaved cells show a persistent amber inset bar, subtle tint, and
+  corner flag so the state is not communicated by color alone.
+- Dirty-cell tooltips show the row and snapshot plus the original and current
+  formatted values.
+- The compact Update icon carries an unsaved-cell count badge and an accessible
+  live status announcement.
+- Recalculated totals flash teal after commit. Cells accepted by PUT flash green
+  and lose their persistent dirty treatment.
 - Invalid cells and editors use the negative/error palette.
 - Dirty markers remain after focus loss, through pending updates and failures,
   then disappear only after the authoritative PUT response accepts the value.
 
-The shared toolbar contains `Update` and `Refresh`. Update is enabled only when
+The shared toolbar contains icon actions for Update and Refresh. Update is enabled only when
 valid dirty work exists. Refresh calls GET; when dirty work exists, the panel
 requires confirmation before discarding it. A compact overlay appears while
 updating or when action is required:
@@ -74,8 +81,10 @@ Invalid values block navigation until corrected or cancelled with Escape.
 
 ## Module and API impact
 
-No additional AG Grid modules are registered. The existing client-side row
-model and runtime Enterprise license setup are sufficient.
+`HighlightChangesModule` provides transient calculation/save flashes, and
+`RowApiModule` provides stable row lookup for targeting exact changed cells.
+Both are registered with the existing client-side row model and runtime
+Enterprise license setup.
 
 The REST contract sends all backend-owned report facts only when Update is
 selected. The version 2 body contains the current actor `userId`,

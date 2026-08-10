@@ -51,14 +51,20 @@ describe('FundingPanelStore', () => {
   it('previews calculated totals while a valid editor value is still active', async () => {
     await waitForReady(store);
 
+    expect(store.unsavedChangeCount()).toBe(0);
+    expect(store.calculationRevision()).toBe(0);
+
     store.beginEdit('occ', 'snapshot0830', '-300,000,000');
 
     expect(findRow(store.report(), 'totalMargin').values.snapshot0830).toBe('-210403134.64');
     expect(findRow(store.report(), 'endOfDay').values.snapshot0830).toBe('4811063538.31');
     expect(store.isDirty()).toBe(true);
+    expect(store.unsavedChangeCount()).toBe(1);
     expect(gateway.putCommands).toHaveLength(0);
 
     expect(store.commitEdit()).toBe(true);
+    expect(store.unsavedChangeCount()).toBe(1);
+    expect(store.calculationRevision()).toBe(1);
     expect(gateway.putCommands).toHaveLength(0);
     expect(store.saveStatus()).toBe('idle');
     expect(store.canUpdate()).toBe(true);
@@ -143,6 +149,10 @@ describe('FundingPanelStore', () => {
       expect(store.saveStatus()).toBe('idle');
     });
 
+    expect(store.saveConfirmation()).toEqual({
+      cells: [{ periodId: 'snapshot0830', rowId: 'occ' }],
+      revision: 1,
+    });
     expect(gateway.putCommands).toHaveLength(1);
     expect(store.isDirty()).toBe(true);
     expect(store.updateReport()).toBe(true);
@@ -160,6 +170,10 @@ describe('FundingPanelStore', () => {
       expect(store.isDirty()).toBe(false);
       expect(store.saveStatus()).toBe('saved');
       expect(store.report()?.version).toBe(19);
+    });
+    expect(store.saveConfirmation()).toEqual({
+      cells: [{ periodId: 'snapshot1130', rowId: 'nscc' }],
+      revision: 2,
     });
   });
 

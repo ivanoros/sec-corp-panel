@@ -87,6 +87,10 @@ describe('PbilPanelComponent', () => {
     ) as HTMLButtonElement | null;
 
     expect(updateButton?.disabled).toBe(false);
+    expect(updateButton?.getAttribute('aria-label')).toBe('Update report (1 unsaved change)');
+    expect(
+      updateButton?.querySelector('.funding-panel-surface__change-count')?.textContent?.trim(),
+    ).toBe('1');
     updateButton?.click();
 
     await vi.waitFor(() => {
@@ -94,6 +98,10 @@ describe('PbilPanelComponent', () => {
       expect(store.report()?.version).toBe(8);
       expect(store.isDirty()).toBe(false);
     });
+    fixture.detectChanges();
+
+    expect(updateButton?.getAttribute('aria-label')).toBe('Update report');
+    expect(updateButton?.querySelector('.funding-panel-surface__change-count')).toBeNull();
   });
 
   it('rejects an outdated save and tells the user to reload because changes were not saved', async () => {
