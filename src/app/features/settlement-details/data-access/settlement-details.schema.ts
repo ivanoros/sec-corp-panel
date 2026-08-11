@@ -37,7 +37,7 @@ export const settlementDetailsSearchRequestSchema = z
     userId: identifierSchema,
     businessDate: businessDateSchema,
     offset: z.number().int().nonnegative(),
-    limit: z.number().int().min(1).max(500),
+    limit: z.number().int().min(1).max(1_000),
     filters: z.array(
       z
         .object({
@@ -75,7 +75,7 @@ export const settlementDetailsSearchResponseSchema = z
     requestId: identifierSchema,
     asOf: z.iso.datetime({ offset: true }),
     totalCount: z.number().int().nonnegative(),
-    rows: z.array(settlementDetailSchema).max(500),
+    rows: z.array(settlementDetailSchema).max(1_000),
   })
   .strict()
   .superRefine(({ rows, totalCount }, context) => {

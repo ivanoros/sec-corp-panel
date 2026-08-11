@@ -11,10 +11,10 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type {
   ColDef,
   FilterChangedEvent,
-  FilterModel,
   GetRowIdParams,
   GridApi,
   GridReadyEvent,
+  ModelUpdatedEvent,
   SideBarDef,
   ToolPanelVisibleChangedEvent,
 } from 'ag-grid-community';
@@ -23,12 +23,11 @@ import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
 import { configureAgGrid } from '../../../../core/grid/ag-grid.setup';
 import { ENTERPRISE_GRID_THEME } from '../../../../core/grid/enterprise-grid.theme';
 import { SETTLEMENT_DETAILS_DATA_ACCESS_PROVIDERS } from '../../data-access/settlement-details-data.providers';
-import { SettlementDetailsDataSource } from '../../data-access/settlement-details.datasource';
-import { SETTLEMENT_DETAILS_GATEWAY } from '../../data-access/settlement-details.gateway';
+import { SettlementDetailsWindowStore } from '../../data-access/settlement-details-window.store';
 import type {
   SettlementDetail,
   SettlementDetailField,
-  SettlementDetailsSearchResult,
+  SettlementTextFilter,
 } from '../../domain/settlement-detail';
 
 interface SettlementColumn {
@@ -49,7 +48,7 @@ type ToolbarFilterField =
   | 'tradeId'
   | 'tradeType';
 
-type ToolbarFilterValues = Readonly<Record<ToolbarFilterField, string>>;
+export type ToolbarFilterValues = Readonly<Record<ToolbarFilterField, string>>;
 
 const EMPTY_TOOLBAR_FILTERS: ToolbarFilterValues = {
   activityType: '',
@@ -128,24 +127,40 @@ export const SETTLEMENT_COLUMNS_SIDE_BAR: SideBarDef = {
   styleUrl: './settlement-details-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  providers: SETTLEMENT_DETAILS_DATA_ACCESS_PROVIDERS,
+  providers: [...SETTLEMENT_DETAILS_DATA_ACCESS_PROVIDERS, SettlementDetailsWindowStore],
 })
 export class SettlementDetailsPanelComponent {
   private readonly runtimeConfig = inject(APP_RUNTIME_CONFIG);
-  private readonly gateway = inject(SETTLEMENT_DETAILS_GATEWAY);
+  private readonly windowStore = inject(SettlementDetailsWindowStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly gridApi = signal<GridApi<SettlementDetail> | null>(null);
-  private readonly lastResult = signal<SettlementDetailsSearchResult | null>(null);
+  private readonly localFilterCount = signal(0);
   private toolbarFilterTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly isLoading = signal(false);
-  readonly errorMessage = signal<string | null>(null);
-  readonly activeFilterCount = signal(0);
+  readonly rows = this.windowStore.rows.asReadonly();
+  readonly totalCount = this.windowStore.totalCount.asReadonly();
+  readonly asOf = this.windowStore.asOf.asReadonly();
+  readonly serverPageIndex = this.windowStore.serverPageIndex.asReadonly();
+  readonly serverPageCount = this.windowStore.serverPageCount;
+  readonly rangeStart = this.windowStore.rangeStart;
+  readonly rangeEnd = this.windowStore.rangeEnd;
+  readonly isLoading = this.windowStore.isLoading.asReadonly();
+  readonly errorMessage = this.windowStore.errorMessage.asReadonly();
+  readonly displayedRowCount = signal(0);
   readonly columnChooserOpen = signal(false);
   readonly settlementDate = signal(this.runtimeConfig.businessDate);
   readonly toolbarFilters = signal<ToolbarFilterValues>(EMPTY_TOOLBAR_FILTERS);
-  readonly totalCount = computed(() => this.lastResult()?.totalCount ?? null);
-  readonly asOf = computed(() => this.lastResult()?.asOf ?? null);
+  readonly activeServerFilterCount = computed(
+    () => Object.values(this.toolbarFilters()).filter((value) => value.length > 0).length,
+  );
+  readonly activeFilterCount = computed(
+    () => this.activeServerFilterCount() + this.localFilterCount(),
+  );
+  readonly loadedRowCount = computed(() => this.rows().length);
+  readonly canGoToPreviousPage = computed(() => !this.isLoading() && this.serverPageIndex() > 0);
+  readonly canGoToNextPage = computed(
+    () => !this.isLoading() && this.serverPageIndex() + 1 < this.serverPageCount(),
+  );
   readonly activityTypeOptions = [
     'Prime Broker',
     'Other Agency and Principal',
@@ -173,24 +188,8 @@ export class SettlementDetailsPanelComponent {
     sortable: true,
     suppressHeaderMenuButton: false,
   };
-  readonly pageSizeOptions = [50, 100, 250, 500];
   readonly sideBar = SETTLEMENT_COLUMNS_SIDE_BAR;
   readonly theme = ENTERPRISE_GRID_THEME;
-  readonly dataSource = new SettlementDetailsDataSource(
-    this.gateway,
-    {
-      businessDate: () => this.settlementDate(),
-      userId: this.runtimeConfig.userId,
-    },
-    {
-      onError: (message) => this.errorMessage.set(message),
-      onLoadingChange: (loading) => this.isLoading.set(loading),
-      onResult: (result) => {
-        this.errorMessage.set(null);
-        this.lastResult.set(result);
-      },
-    },
-  );
   readonly getRowId = ({ data }: GetRowIdParams<SettlementDetail>): string => data.recordId;
 
   constructor() {
@@ -199,25 +198,35 @@ export class SettlementDetailsPanelComponent {
       if (this.toolbarFilterTimer !== null) {
         clearTimeout(this.toolbarFilterTimer);
       }
-
-      this.dataSource.destroy();
     });
   }
 
   onGridReady(event: GridReadyEvent<SettlementDetail>): void {
     this.gridApi.set(event.api);
+    this.loadServerPage(0);
   }
 
   onFilterChanged(event: FilterChangedEvent<SettlementDetail>): void {
     const filterModel = event.api.getFilterModel();
 
-    this.activeFilterCount.set(Object.keys(filterModel).length);
-    this.syncToolbarFiltersFromGrid(filterModel);
+    this.localFilterCount.set(Object.keys(filterModel).length);
+    this.displayedRowCount.set(event.api.getDisplayedRowCount());
+  }
+
+  onModelUpdated(event: ModelUpdatedEvent<SettlementDetail>): void {
+    this.displayedRowCount.set(event.api.getDisplayedRowCount());
   }
 
   clearFilters(): void {
+    const hadServerFilters = this.activeServerFilterCount() > 0;
+
+    this.cancelToolbarFilterTimer();
     this.toolbarFilters.set(EMPTY_TOOLBAR_FILTERS);
     this.gridApi()?.setFilterModel(null);
+
+    if (hadServerFilters) {
+      this.loadServerPage(0);
+    }
   }
 
   updateSettlementDate(event: Event): void {
@@ -227,26 +236,25 @@ export class SettlementDetailsPanelComponent {
       return;
     }
 
+    this.cancelToolbarFilterTimer();
     this.settlementDate.set(businessDate);
-    this.refreshFromFirstPage();
+    this.loadServerPage(0);
   }
 
   updateToolbarTextFilter(field: ToolbarFilterField, event: Event): void {
     this.updateToolbarFilterValue(field, readControlValue(event));
-
-    if (this.toolbarFilterTimer !== null) {
-      clearTimeout(this.toolbarFilterTimer);
-    }
+    this.cancelToolbarFilterTimer();
 
     this.toolbarFilterTimer = setTimeout(() => {
       this.toolbarFilterTimer = null;
-      this.applyToolbarFilters();
+      this.loadServerPage(0);
     }, 350);
   }
 
   updateToolbarSelectFilter(field: ToolbarFilterField, event: Event): void {
+    this.cancelToolbarFilterTimer();
     this.updateToolbarFilterValue(field, readControlValue(event));
-    this.applyToolbarFilters();
+    this.loadServerPage(0);
   }
 
   toggleColumnChooser(): void {
@@ -279,65 +287,51 @@ export class SettlementDetailsPanelComponent {
   }
 
   refresh(): void {
-    this.errorMessage.set(null);
-    this.gridApi()?.refreshServerSide({ purge: true });
+    this.cancelToolbarFilterTimer();
+    this.loadServerPage(this.serverPageIndex());
+  }
+
+  goToFirstPage(): void {
+    this.loadServerPage(0);
+  }
+
+  goToPreviousPage(): void {
+    if (this.canGoToPreviousPage()) {
+      this.loadServerPage(this.serverPageIndex() - 1);
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.canGoToNextPage()) {
+      this.loadServerPage(this.serverPageIndex() + 1);
+    }
+  }
+
+  goToLastPage(): void {
+    if (this.canGoToNextPage()) {
+      this.loadServerPage(this.serverPageCount() - 1);
+    }
   }
 
   private updateToolbarFilterValue(field: ToolbarFilterField, value: string): void {
     this.toolbarFilters.update((filters) => ({ ...filters, [field]: value }));
   }
 
-  private applyToolbarFilters(): void {
-    const api = this.gridApi();
-
-    if (api === null) {
-      return;
+  private cancelToolbarFilterTimer(): void {
+    if (this.toolbarFilterTimer !== null) {
+      clearTimeout(this.toolbarFilterTimer);
+      this.toolbarFilterTimer = null;
     }
-
-    const filterModel: FilterModel = { ...api.getFilterModel() };
-
-    for (const [field, value] of Object.entries(this.toolbarFilters()) as [
-      ToolbarFilterField,
-      string,
-    ][]) {
-      if (value.length === 0) {
-        delete filterModel[field];
-      } else {
-        filterModel[field] = {
-          filterType: 'text',
-          type: EXACT_MATCH_TOOLBAR_FIELDS.has(field) ? 'equals' : 'contains',
-          filter: value,
-        };
-      }
-    }
-
-    api.setFilterModel(filterModel);
-    api.onFilterChanged();
   }
 
-  private syncToolbarFiltersFromGrid(filterModel: FilterModel): void {
-    const nextFilters = Object.fromEntries(
-      Object.keys(EMPTY_TOOLBAR_FILTERS).map((field) => [
-        field,
-        readGridFilterValue(filterModel[field]),
-      ]),
-    ) as Record<ToolbarFilterField, string>;
-
-    this.toolbarFilters.set(nextFilters);
-  }
-
-  private refreshFromFirstPage(): void {
-    const api = this.gridApi();
-
-    if (api === null) {
-      return;
-    }
-
-    if (api.paginationGetCurrentPage() === 0) {
-      api.refreshServerSide({ purge: true });
-    } else {
-      api.paginationGoToFirstPage();
-    }
+  private loadServerPage(pageIndex: number): void {
+    this.windowStore.loadPage(
+      {
+        businessDate: this.settlementDate(),
+        filters: mapToolbarFilters(this.toolbarFilters()),
+      },
+      pageIndex,
+    );
   }
 }
 
@@ -360,11 +354,20 @@ function readControlValue(event: Event): string {
     : '';
 }
 
-function readGridFilterValue(model: unknown): string {
-  if (typeof model !== 'object' || model === null || Array.isArray(model)) {
-    return '';
-  }
+export function mapToolbarFilters(filters: ToolbarFilterValues): SettlementTextFilter[] {
+  return (Object.entries(filters) as [ToolbarFilterField, string][]).flatMap(
+    ([field, rawValue]) => {
+      const value = rawValue.trim();
 
-  const filter = (model as Readonly<Record<string, unknown>>)['filter'];
-  return typeof filter === 'string' ? filter : '';
+      return value.length === 0
+        ? []
+        : [
+            {
+              field,
+              operator: EXACT_MATCH_TOOLBAR_FIELDS.has(field) ? 'equals' : 'contains',
+              value,
+            } satisfies SettlementTextFilter,
+          ];
+    },
+  );
 }

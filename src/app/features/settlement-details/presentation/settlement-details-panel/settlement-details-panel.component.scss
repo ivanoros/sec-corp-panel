@@ -8,7 +8,7 @@
 .settlement-details-panel {
   position: relative;
   display: grid;
-  grid-template-rows: 36px 46px minmax(0, 1fr);
+  grid-template-rows: 36px 46px minmax(0, 1fr) 30px;
   min-width: 0;
   min-height: 0;
   background: #1d2021;
@@ -88,6 +88,13 @@
 
 .settlement-details-panel__criterion--wide {
   flex-basis: 148px;
+}
+
+.settlement-details-panel__criteria-action {
+  width: 24px;
+  height: 24px;
+  margin-left: 1px;
+  padding: 4px;
 }
 
 .settlement-details-panel__criterion input,
@@ -240,19 +247,12 @@
     background: #2d3d3c;
   }
 
-  .ag-paging-panel {
-    border-top-color: #45494a;
-    background: #292d2e;
-    color: #dce3e2;
-    font-size: 11px;
-  }
-
   .ag-side-bar {
-    border-left-color: #4d5556;
+    border-right-color: #4d5556;
   }
 
   .ag-tool-panel-wrapper {
-    border-left-color: #4d5556;
+    border-right-color: #4d5556;
     background: #222526;
   }
 
@@ -268,11 +268,69 @@
   }
 }
 
+.settlement-details-panel__pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 8px;
+  border-top: 1px solid #45494a;
+  background: #292d2e;
+  color: #dce3e2;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settlement-details-panel__pagination-buttons {
+  display: flex;
+  gap: 3px;
+}
+
+.settlement-details-panel__pagination button {
+  display: grid;
+  width: 23px;
+  height: 22px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: #dce3e2;
+  font: 14px/1 inherit;
+  cursor: pointer;
+}
+
+.settlement-details-panel__pagination button:hover:not(:disabled) {
+  border-color: #637170;
+  background: #3a4343;
+}
+
+.settlement-details-panel__pagination button:focus-visible {
+  outline: 2px solid #8bd0ca;
+  outline-offset: 1px;
+}
+
+.settlement-details-panel__pagination button:disabled {
+  color: #697170;
+  cursor: not-allowed;
+}
+
+.settlement-details-panel__pagination-range {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.settlement-details-panel__pagination-note {
+  overflow: hidden;
+  color: #8ea09e;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .settlement-details-panel__error {
   position: absolute;
   z-index: 5;
   right: 10px;
-  bottom: 42px;
+  bottom: 36px;
   display: flex;
   align-items: center;
   gap: 9px;

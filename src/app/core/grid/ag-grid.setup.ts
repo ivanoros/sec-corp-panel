@@ -4,7 +4,6 @@ import {
   CustomEditorModule,
   HighlightChangesModule,
   ModuleRegistry,
-  PaginationModule,
   RenderApiModule,
   RowApiModule,
   RowStyleModule,
@@ -12,13 +11,7 @@ import {
   TextFilterModule,
   TooltipModule,
 } from 'ag-grid-community';
-import {
-  ColumnsToolPanelModule,
-  LicenseManager,
-  ServerSideRowModelApiModule,
-  ServerSideRowModelModule,
-  SideBarModule,
-} from 'ag-grid-enterprise';
+import { ColumnsToolPanelModule, LicenseManager, SideBarModule } from 'ag-grid-enterprise';
 
 import type { RuntimeConfig } from '../config/runtime-config';
 
@@ -28,12 +21,9 @@ const FUNDING_GRID_MODULES = [
   ColumnsToolPanelModule,
   CustomEditorModule,
   HighlightChangesModule,
-  PaginationModule,
   RenderApiModule,
   RowApiModule,
   RowStyleModule,
-  ServerSideRowModelApiModule,
-  ServerSideRowModelModule,
   SideBarModule,
   TextEditorModule,
   TextFilterModule,

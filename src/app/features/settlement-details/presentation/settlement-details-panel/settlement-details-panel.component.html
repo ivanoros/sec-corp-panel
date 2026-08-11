@@ -30,31 +30,16 @@
         <span class="settlement-details-panel__record-count" data-testid="settlement-record-count">
           {{ totalCount()!.toLocaleString() }} records
         </span>
+        <span data-testid="settlement-loaded-count">
+          {{ displayedRowCount().toLocaleString() }} /
+          {{ loadedRowCount().toLocaleString() }} loaded
+        </span>
       }
       @if (isLoading()) {
         <span aria-live="polite" class="settlement-details-panel__loading">Loading…</span>
       }
     </div>
 
-    <button
-      aria-label="Clear all filters"
-      class="settlement-details-panel__toolbar-action"
-      data-testid="clear-settlement-filters"
-      [disabled]="activeFilterCount() === 0"
-      title="Clear all filters"
-      type="button"
-      (click)="clearFilters()"
-    >
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-        <path d="M4 5h16l-6.3 7.2v5.3l-3.4 1.7v-7L4 5Z" />
-        <path d="m16.5 16.5 4 4m0-4-4 4" />
-      </svg>
-      @if (activeFilterCount() > 0) {
-        <span aria-hidden="true" class="settlement-details-panel__filter-count">
-          {{ activeFilterCount() }}
-        </span>
-      }
-    </button>
     <button
       aria-label="Refresh settlement details"
       class="settlement-details-panel__toolbar-action settlement-details-panel__toolbar-action--primary"
@@ -190,6 +175,25 @@
         (input)="updateToolbarTextFilter('productId', $event)"
       />
     </label>
+    <button
+      aria-label="Clear all filters"
+      class="settlement-details-panel__toolbar-action settlement-details-panel__criteria-action"
+      data-testid="clear-settlement-filters"
+      [disabled]="activeFilterCount() === 0"
+      title="Clear all filters"
+      type="button"
+      (click)="clearFilters()"
+    >
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <path d="M4 5h16l-6.3 7.2v5.3l-3.4 1.7v-7L4 5Z" />
+        <path d="m16.5 16.5 4 4m0-4-4 4" />
+      </svg>
+      @if (activeFilterCount() > 0) {
+        <span aria-hidden="true" class="settlement-details-panel__filter-count">
+          {{ activeFilterCount() }}
+        </span>
+      }
+    </button>
   </div>
 
   <ag-grid-angular
@@ -198,21 +202,15 @@
     class="settlement-details-grid"
     data-testid="settlement-details-grid"
     [animateRows]="false"
-    [blockLoadDebounceMillis]="150"
-    [cacheBlockSize]="100"
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
     [enableCellTextSelection]="true"
     [ensureDomOrder]="true"
     [getRowId]="getRowId"
     [headerHeight]="32"
-    [maxBlocksInCache]="5"
-    [pagination]="true"
-    [paginationPageSize]="100"
-    [paginationPageSizeSelector]="pageSizeOptions"
-    rowModelType="serverSide"
+    rowModelType="clientSide"
+    [rowData]="rows()"
     [rowHeight]="24"
-    [serverSideDatasource]="dataSource"
     [sideBar]="sideBar"
     [suppressCellFocus]="true"
     [suppressContextMenu]="true"
@@ -220,8 +218,64 @@
     [tooltipShowDelay]="350"
     (filterChanged)="onFilterChanged($event)"
     (gridReady)="onGridReady($event)"
+    (modelUpdated)="onModelUpdated($event)"
     (toolPanelVisibleChanged)="onToolPanelVisibleChanged($event)"
   ></ag-grid-angular>
+
+  <nav aria-label="Settlement Details pages" class="settlement-details-panel__pagination">
+    <div class="settlement-details-panel__pagination-buttons">
+      <button
+        aria-label="First page"
+        data-testid="settlement-first-page"
+        [disabled]="!canGoToPreviousPage()"
+        title="First page"
+        type="button"
+        (click)="goToFirstPage()"
+      >
+        |‹
+      </button>
+      <button
+        aria-label="Previous page"
+        data-testid="settlement-previous-page"
+        [disabled]="!canGoToPreviousPage()"
+        title="Previous page"
+        type="button"
+        (click)="goToPreviousPage()"
+      >
+        ‹
+      </button>
+      <span data-testid="settlement-page-number">
+        Page {{ serverPageIndex() + 1 }} of {{ serverPageCount().toLocaleString() }}
+      </span>
+      <button
+        aria-label="Next page"
+        data-testid="settlement-next-page"
+        [disabled]="!canGoToNextPage()"
+        title="Next page"
+        type="button"
+        (click)="goToNextPage()"
+      >
+        ›
+      </button>
+      <button
+        aria-label="Last page"
+        data-testid="settlement-last-page"
+        [disabled]="!canGoToNextPage()"
+        title="Last page"
+        type="button"
+        (click)="goToLastPage()"
+      >
+        ›|
+      </button>
+    </div>
+    <span class="settlement-details-panel__pagination-range" data-testid="settlement-page-range">
+      {{ rangeStart().toLocaleString() }}–{{ rangeEnd().toLocaleString() }} of
+      {{ (totalCount() ?? 0).toLocaleString() }} server records
+    </span>
+    <span class="settlement-details-panel__pagination-note">
+      Grid filters search this 1,000-row page only
+    </span>
+  </nav>
 
   @if (errorMessage(); as message) {
     <div class="settlement-details-panel__error" data-testid="settlement-error" role="alert">

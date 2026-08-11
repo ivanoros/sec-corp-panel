@@ -9,16 +9,16 @@ describe('searchMockSettlementDetails', () => {
       schemaVersion: 1,
       userId: 'e70165',
       businessDate: '2026-08-10',
-      offset: 100,
-      limit: 50,
+      offset: 1_000,
+      limit: 1_000,
       filters: [],
       sort: [],
     });
 
     expect(result.totalCount).toBe(MOCK_SETTLEMENT_DETAIL_COUNT);
-    expect(result.rows).toHaveLength(50);
-    expect(result.rows[0]?.recordId).toBe('settlement-00000101');
-    expect(result.rows[49]?.recordId).toBe('settlement-00000150');
+    expect(result.rows).toHaveLength(1_000);
+    expect(result.rows[0]?.recordId).toBe('settlement-00001001');
+    expect(result.rows[999]?.recordId).toBe('settlement-00002000');
   });
 
   it('applies filters before pagination', () => {
