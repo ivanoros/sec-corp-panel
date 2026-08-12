@@ -1,0 +1,16 @@
+<app-settlement-panel-frame
+  title="Projections"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <div class="projection-grid">
+    <span></span><span>PBIL</span><span>Sec Corp</span>
+    @for (row of rows; track row.key) {
+      <strong>{{ row.label }}</strong>
+      <span>{{ formatAmount(values()[row.key].pbil) }}</span>
+      <span [class.negative]="values()[row.key].secCorp.startsWith('-')">
+        {{ formatAmount(values()[row.key].secCorp) }}
+      </span>
+    }
+  </div>
+</app-settlement-panel-frame>

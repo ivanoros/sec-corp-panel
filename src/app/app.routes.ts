@@ -4,7 +4,14 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'sec-corp',
+    redirectTo: 'settlements',
+  },
+  {
+    path: 'settlements',
+    loadComponent: () =>
+      import('./features/settlements-shell/presentation/settlements-shell/settlements-shell.component').then(
+        ({ SettlementsShellComponent }) => SettlementsShellComponent,
+      ),
   },
   {
     path: 'sec-corp',
@@ -29,6 +36,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'sec-corp',
+    redirectTo: 'settlements',
   },
 ];

@@ -17,6 +17,8 @@ describe('HttpSettlementDetailsGateway', () => {
       apiBaseUrl: '/operations-api/',
       businessDate: '2026-08-10',
       fundingPanelDataSource: 'http',
+      settlementsPollingEnabled: true,
+      settlementsPollingIntervalMs: 60_000,
       userId: 'e70165',
     };
 

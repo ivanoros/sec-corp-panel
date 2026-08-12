@@ -29,6 +29,8 @@ window.__FUNDING_PANEL_CONFIG__ = {
   agGridEnterpriseLicenseKey: '<injected by the deployment environment>',
   businessDate: '2026-07-28',
   fundingPanelDataSource: 'http',
+  settlementsPollingEnabled: true,
+  settlementsPollingIntervalMs: 60000,
   userId: 'e70165',
 };
 ```
@@ -52,6 +54,7 @@ loads. The default mock user is `mock-user`.
 - `/sec-corp`
 - `/pbil`
 - `/settlement-details`
+- `/settlements`
 
 ## REST data boundary
 

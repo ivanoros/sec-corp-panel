@@ -1,0 +1,16 @@
+<app-settlement-panel-frame
+  title="End of day movement"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <dl>
+    @for (row of rows; track row.key) {
+      <div [class.accent]="row.accent">
+        <dt>{{ row.label }}</dt>
+        <dd [class.negative]="values()[row.key].startsWith('-')">
+          {{ formatAmount(values()[row.key]) }}
+        </dd>
+      </div>
+    }
+  </dl>
+</app-settlement-panel-frame>

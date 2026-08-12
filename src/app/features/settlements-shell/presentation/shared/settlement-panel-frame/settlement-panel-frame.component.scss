@@ -1,0 +1,93 @@
+:host,
+.settlement-panel-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.settlement-panel-frame {
+  display: grid;
+  grid-template-rows: 30px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #484e50;
+  background: #1d2021;
+  color: #e9eeee;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 36%);
+}
+
+.settlement-panel-frame__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 3px 6px;
+  border-bottom: 1px solid #43494a;
+  background: #2a2e2f;
+}
+
+.settlement-panel-frame__marker {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #6e58e8, #55a2ff);
+  box-shadow: 0 0 5px rgb(95 106 238 / 55%);
+}
+
+h2 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #e8eded;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  padding: 4px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: #aeb8b7;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: #5f6c6b;
+  background: #3a4343;
+  color: #e9eeee;
+}
+
+button:focus-visible {
+  outline: 2px solid #8bd0ca;
+  outline-offset: 1px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.settlement-panel-frame__content {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}

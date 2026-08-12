@@ -63,8 +63,6 @@
   overflow-x: auto;
   border-bottom: 1px solid #4d5556;
   background: #222627;
-  scrollbar-color: #656a6b #242627;
-  scrollbar-width: thin;
 }
 
 .settlement-details-panel__criterion {
@@ -259,12 +257,6 @@
   .ag-column-select-header {
     border-bottom-color: #45494a;
     background: #303536;
-  }
-
-  .ag-body-vertical-scroll-viewport,
-  .ag-body-horizontal-scroll-viewport {
-    scrollbar-color: #656a6b #242627;
-    scrollbar-width: thin;
   }
 }
 

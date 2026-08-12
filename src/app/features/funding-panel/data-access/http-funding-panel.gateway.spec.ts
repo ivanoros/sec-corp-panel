@@ -22,6 +22,8 @@ describe('HttpFundingPanelGateway', () => {
       apiBaseUrl: '/funding-api/',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'http',
+      settlementsPollingEnabled: true,
+      settlementsPollingIntervalMs: 60_000,
       userId: 'e70165',
     };
 

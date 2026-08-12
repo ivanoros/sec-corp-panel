@@ -1,0 +1,28 @@
+<app-settlement-panel-frame
+  title="Cash positions over time"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <div class="chart">
+    <svg aria-label="PBIL and Sec Corp cash positions over time" role="img" viewBox="0 0 1000 190">
+      <line class="grid-line" x1="30" x2="970" y1="40" y2="40" />
+      <line class="grid-line" x1="30" x2="970" y1="80" y2="80" />
+      <line class="grid-line" x1="30" x2="970" y1="120" y2="120" />
+      <line class="grid-line" x1="30" x2="970" y1="160" y2="160" />
+      @if (selectedSeries() !== 'secCorp') {
+        <polyline class="series series--pbil" [attr.points]="pbilPath()" />
+      }
+      @if (selectedSeries() !== 'pbil') {
+        <polyline class="series series--sec-corp" [attr.points]="secCorpPath()" />
+      }
+    </svg>
+    <div class="legend">
+      @if (selectedSeries() !== 'secCorp') {
+        <span><i class="pbil"></i>PBIL</span>
+      }
+      @if (selectedSeries() !== 'pbil') {
+        <span><i class="sec-corp"></i>Sec Corp</span>
+      }
+    </div>
+  </div>
+</app-settlement-panel-frame>

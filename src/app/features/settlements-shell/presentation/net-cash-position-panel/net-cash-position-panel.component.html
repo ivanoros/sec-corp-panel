@@ -1,0 +1,18 @@
+<app-settlement-panel-frame
+  title="Net Cash Position"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <dl>
+    <div>
+      <dt>PBIL</dt>
+      <dd>{{ formatAmount(values().pbil) }}</dd>
+    </div>
+    <div>
+      <dt>Sec Corp</dt>
+      <dd [class.negative]="values().secCorp.startsWith('-')">
+        {{ formatAmount(values().secCorp) }}
+      </dd>
+    </div>
+  </dl>
+</app-settlement-panel-frame>

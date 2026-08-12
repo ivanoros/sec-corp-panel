@@ -44,6 +44,8 @@ function configureDataAccess(
     apiBaseUrl: '/api',
     businessDate: '2026-07-25',
     fundingPanelDataSource,
+    settlementsPollingEnabled: true,
+    settlementsPollingIntervalMs: 60_000,
     userId: 'test-user',
   };
 

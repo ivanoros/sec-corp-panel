@@ -1,0 +1,129 @@
+<main class="settlements-shell" data-testid="settlements-shell">
+  @if (store.dashboard(); as dashboard) {
+    <div
+      class="settlements-shell__workspace"
+      [class.settlements-shell__workspace--resizing]="resizing()"
+      [style]="workspaceStyle()"
+    >
+      <div class="settlements-shell__net-cash">
+        <app-net-cash-position-panel
+          [values]="dashboard.netCashPositions"
+          [refreshing]="store.loadStatus() === 'loading'"
+          (refreshRequested)="store.refresh()"
+        />
+      </div>
+      <div class="settlements-shell__chart">
+        <app-cash-positions-over-time-panel
+          [points]="dashboard.cashPositionsOverTime"
+          [refreshing]="store.loadStatus() === 'loading'"
+          (refreshRequested)="store.refresh()"
+        />
+      </div>
+      <div class="settlements-shell__movement">
+        <app-end-of-day-movement-panel
+          [values]="dashboard.endOfDayMovement"
+          [refreshing]="store.loadStatus() === 'loading'"
+          (refreshRequested)="store.refresh()"
+        />
+      </div>
+      <div class="settlements-shell__projections">
+        <app-projections-panel
+          [values]="dashboard.projections"
+          [refreshing]="store.loadStatus() === 'loading'"
+          (refreshRequested)="store.refresh()"
+        />
+      </div>
+      <div class="settlements-shell__totals">
+        <app-settlement-totals-panel
+          [values]="dashboard.totals"
+          [refreshing]="store.loadStatus() === 'loading'"
+          (refreshRequested)="store.refresh()"
+        />
+      </div>
+      <div class="settlements-shell__details">
+        <app-settlement-details-panel />
+      </div>
+      <div
+        aria-label="Resize left panel column"
+        aria-orientation="vertical"
+        [attr.aria-valuenow]="layoutStore.layout().leftRailPercent"
+        aria-valuemin="12"
+        aria-valuemax="32"
+        class="settlements-shell__resize-handle settlements-shell__resize-handle--left"
+        data-testid="resize-left-rail"
+        role="separator"
+        tabindex="0"
+        (keydown)="resizeWithKeyboard('leftRail', $event)"
+        (pointercancel)="finishResize($event)"
+        (pointerdown)="startResize('leftRail', $event)"
+        (pointermove)="continueResize($event)"
+        (pointerup)="finishResize($event)"
+      ></div>
+      <div
+        aria-label="Resize End of Day Movement panel width"
+        aria-orientation="vertical"
+        [attr.aria-valuenow]="layoutStore.layout().rightSummaryPercent"
+        aria-valuemin="18"
+        aria-valuemax="38"
+        class="settlements-shell__resize-handle settlements-shell__resize-handle--right"
+        data-testid="resize-right-summary"
+        role="separator"
+        tabindex="0"
+        (keydown)="resizeWithKeyboard('rightSummary', $event)"
+        (pointercancel)="finishResize($event)"
+        (pointerdown)="startResize('rightSummary', $event)"
+        (pointermove)="continueResize($event)"
+        (pointerup)="finishResize($event)"
+      ></div>
+      <div
+        aria-label="Resize top panel row"
+        aria-orientation="horizontal"
+        [attr.aria-valuenow]="layoutStore.layout().topRowPercent"
+        aria-valuemin="16"
+        aria-valuemax="46"
+        class="settlements-shell__resize-handle settlements-shell__resize-handle--top"
+        data-testid="resize-top-row"
+        role="separator"
+        tabindex="0"
+        (keydown)="resizeWithKeyboard('topRow', $event)"
+        (pointercancel)="finishResize($event)"
+        (pointerdown)="startResize('topRow', $event)"
+        (pointermove)="continueResize($event)"
+        (pointerup)="finishResize($event)"
+      ></div>
+      <div
+        aria-label="Resize Totals panel height"
+        aria-orientation="horizontal"
+        [attr.aria-valuenow]="layoutStore.layout().totalsRowPercent"
+        aria-valuemin="12"
+        aria-valuemax="32"
+        class="settlements-shell__resize-handle settlements-shell__resize-handle--totals"
+        data-testid="resize-totals-row"
+        role="separator"
+        tabindex="0"
+        (keydown)="resizeWithKeyboard('totalsRow', $event)"
+        (pointercancel)="finishResize($event)"
+        (pointerdown)="startResize('totalsRow', $event)"
+        (pointermove)="continueResize($event)"
+        (pointerup)="finishResize($event)"
+      ></div>
+      <button
+        aria-label="Reset panel sizes"
+        class="settlements-shell__reset-layout"
+        data-testid="reset-settlements-layout"
+        title="Reset panel sizes"
+        type="button"
+        (click)="layoutStore.reset()"
+      >
+        ↺
+      </button>
+    </div>
+  } @else if (store.loadStatus() === 'error') {
+    <div class="settlements-shell__state" role="alert">
+      <span>{{ store.errorMessage() }}</span>
+      <button type="button" (click)="store.refresh()">Try again</button>
+    </div>
+  } @else {
+    <div aria-live="polite" class="settlements-shell__state">Loading settlement workspace…</div>
+  }
+</main>

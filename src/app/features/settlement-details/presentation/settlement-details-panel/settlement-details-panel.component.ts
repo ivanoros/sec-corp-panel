@@ -291,6 +291,12 @@ export class SettlementDetailsPanelComponent {
     this.loadServerPage(this.serverPageIndex());
   }
 
+  refreshIfIdle(): void {
+    if (!this.isLoading()) {
+      this.refresh();
+    }
+  }
+
   goToFirstPage(): void {
     this.loadServerPage(0);
   }

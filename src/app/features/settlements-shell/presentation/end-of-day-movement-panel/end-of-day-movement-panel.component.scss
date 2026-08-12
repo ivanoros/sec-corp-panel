@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+dl {
+  display: grid;
+  margin: 0;
+  padding: 5px;
+  font-size: 9px;
+}
+
+dl div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  padding: 2px 4px;
+  border-bottom: 1px solid #454a4b;
+  background: #d4dddd;
+  color: #202526;
+}
+
+dt,
+dd {
+  margin: 0;
+}
+
+dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.accent dd {
+  color: #006e49;
+  font-weight: 700;
+}
+
+.negative {
+  color: #762c37;
+}
+
+.accent .negative {
+  color: #006e49;
+}

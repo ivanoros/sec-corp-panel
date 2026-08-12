@@ -1,0 +1,27 @@
+<app-settlement-panel-frame
+  title="Totals"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>PBIL</th>
+        <th>Sec Corp</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Daily net cash</th>
+        <td>{{ formatAmount(values().dailyNetCash.pbil) }}</td>
+        <td>{{ formatAmount(values().dailyNetCash.secCorp) }}</td>
+      </tr>
+      <tr>
+        <th>Net EOD balance</th>
+        <td>{{ formatAmount(values().netEndOfDayBalance.pbil) }}</td>
+        <td>{{ formatAmount(values().netEndOfDayBalance.secCorp) }}</td>
+      </tr>
+    </tbody>
+  </table>
+</app-settlement-panel-frame>

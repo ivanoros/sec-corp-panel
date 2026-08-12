@@ -7,6 +7,8 @@ export interface RuntimeConfig {
   readonly apiBaseUrl: string;
   readonly businessDate: string;
   readonly fundingPanelDataSource: FundingPanelDataSource;
+  readonly settlementsPollingEnabled: boolean;
+  readonly settlementsPollingIntervalMs: number;
   readonly userId: string;
 }
 
@@ -22,6 +24,8 @@ const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = Object.freeze({
   apiBaseUrl: '/api',
   businessDate: '2026-07-25',
   fundingPanelDataSource: 'mock',
+  settlementsPollingEnabled: true,
+  settlementsPollingIntervalMs: 60_000,
   userId: 'mock-user',
 });
 
@@ -43,6 +47,12 @@ export function readRuntimeConfig(
     fundingPanelDataSource:
       readFundingPanelDataSource(candidate['fundingPanelDataSource']) ??
       DEFAULT_RUNTIME_CONFIG.fundingPanelDataSource,
+    settlementsPollingEnabled:
+      readBoolean(candidate['settlementsPollingEnabled']) ??
+      DEFAULT_RUNTIME_CONFIG.settlementsPollingEnabled,
+    settlementsPollingIntervalMs:
+      readPollingInterval(candidate['settlementsPollingIntervalMs']) ??
+      DEFAULT_RUNTIME_CONFIG.settlementsPollingIntervalMs,
     userId: readActualUserId(candidate['userId']) ?? DEFAULT_RUNTIME_CONFIG.userId,
   });
 }
@@ -62,6 +72,19 @@ function readOptionalNonEmptyString(value: unknown): string | null {
 
 function readFundingPanelDataSource(value: unknown): FundingPanelDataSource | null {
   return value === 'http' || value === 'mock' ? value : null;
+}
+
+function readBoolean(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
+function readPollingInterval(value: unknown): number | null {
+  return typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 10_000 &&
+    value <= 86_400_000
+    ? value
+    : null;
 }
 
 function readActualUserId(value: unknown): string | null {

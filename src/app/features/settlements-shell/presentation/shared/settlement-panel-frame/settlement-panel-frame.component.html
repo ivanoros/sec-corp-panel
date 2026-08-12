@@ -1,0 +1,21 @@
+<section class="settlement-panel-frame">
+  <header class="settlement-panel-frame__header">
+    <span aria-hidden="true" class="settlement-panel-frame__marker"></span>
+    <h2>{{ title() }}</h2>
+    <button
+      [attr.aria-label]="'Refresh ' + title()"
+      [disabled]="refreshing()"
+      [title]="'Refresh ' + title()"
+      type="button"
+      (click)="refreshRequested.emit()"
+    >
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <path d="M20 6.75v5h-5" />
+        <path d="M18.45 15.5A7.5 7.5 0 1 1 19.6 9.6L20 11.75" />
+      </svg>
+    </button>
+  </header>
+  <div class="settlement-panel-frame__content">
+    <ng-content />
+  </div>
+</section>

@@ -68,4 +68,17 @@ describe('AppComponent', () => {
 
     expect(compiled.querySelector('[data-testid="settlement-details-panel"]')).not.toBeNull();
   });
+
+  it('should mount the Settlements Shell route', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/settlements');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('[data-testid="settlements-shell"]')).not.toBeNull();
+  });
 });

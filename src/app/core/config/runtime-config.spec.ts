@@ -12,6 +12,8 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/api',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'mock',
+      settlementsPollingEnabled: true,
+      settlementsPollingIntervalMs: 60_000,
       userId: 'mock-user',
     });
   });
@@ -23,6 +25,8 @@ describe('readRuntimeConfig', () => {
         apiBaseUrl: ' /funding-api ',
         businessDate: '2026-07-28',
         fundingPanelDataSource: 'http',
+        settlementsPollingEnabled: false,
+        settlementsPollingIntervalMs: 120_000,
         userId: ' e70165 ',
       }),
     ).toEqual({
@@ -30,6 +34,8 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      settlementsPollingEnabled: false,
+      settlementsPollingIntervalMs: 120_000,
       userId: 'e70165',
     });
   });
@@ -39,6 +45,8 @@ describe('readRuntimeConfig', () => {
       readRuntimeConfig({
         businessDate: '2026-02-30',
         fundingPanelDataSource: 'network',
+        settlementsPollingEnabled: 'yes',
+        settlementsPollingIntervalMs: 100,
         userId: 'system',
       }),
     ).toEqual({
@@ -46,6 +54,8 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/api',
       businessDate: '2026-07-25',
       fundingPanelDataSource: 'mock',
+      settlementsPollingEnabled: true,
+      settlementsPollingIntervalMs: 60_000,
       userId: 'mock-user',
     });
   });
@@ -58,6 +68,8 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      settlementsPollingEnabled: false,
+      settlementsPollingIntervalMs: 30_000,
       userId: 'mock-user',
     };
 
@@ -66,6 +78,8 @@ describe('readRuntimeConfig', () => {
       apiBaseUrl: '/funding-api',
       businessDate: '2026-07-28',
       fundingPanelDataSource: 'http',
+      settlementsPollingEnabled: false,
+      settlementsPollingIntervalMs: 30_000,
       userId: 'mock-user',
     });
 
