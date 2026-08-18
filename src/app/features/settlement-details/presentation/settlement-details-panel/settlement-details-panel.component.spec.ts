@@ -6,6 +6,7 @@ import { SettlementDetailsWindowStore } from '../../data-access/settlement-detai
 import type { SettlementDetail } from '../../domain/settlement-detail';
 import {
   createSettlementColumnDefs,
+  formatAccountingNumber,
   mapToolbarFilters,
   SETTLEMENT_COLUMNS_SIDE_BAR,
   SettlementDetailsPanelComponent,
@@ -148,7 +149,7 @@ describe('SettlementDetailsPanelComponent', () => {
   it('defines the complete screenshot-derived read-only column set', () => {
     const columns = createSettlementColumnDefs();
 
-    expect(columns).toHaveLength(20);
+    expect(columns).toHaveLength(25);
     expect(columns.map(({ colId }) => colId)).toEqual(
       expect.arrayContaining([
         'settlementMode',
@@ -158,9 +159,24 @@ describe('SettlementDetailsPanelComponent', () => {
         'securityDescription',
         'bookingReferenceId',
         'tradeType',
+        'tradedQuantity',
+        'tradeNetAmount',
+        'settledQuantity',
+        'settlementNetAmount',
+        'settlementCurrency',
       ]),
     );
     expect(columns.every(({ editable }) => editable !== true)).toBe(true);
+    expect(columns.find(({ colId }) => colId === 'tradedQuantity')?.filter).toBe(
+      'agNumberColumnFilter',
+    );
+    expect(columns.find(({ colId }) => colId === 'tradeNetAmount')?.type).toBe('numericColumn');
+  });
+
+  it('formats negative quantities and amounts with accounting parentheses', () => {
+    expect(formatAccountingNumber(-795_873, 'quantity')).toBe('(795,873)');
+    expect(formatAccountingNumber(427_655_785.25, 'amount')).toBe('427,655,785.25');
+    expect(formatAccountingNumber(null, 'amount')).toBe('');
   });
 
   it('maps only top criteria to backend filters with the expected operators', () => {

@@ -28,6 +28,11 @@ const settlementDetailSchema = z
     source: z.string().max(60),
     tradeType: z.string().max(60),
     tradeId: z.string().max(80),
+    tradedQuantity: z.number(),
+    tradeNetAmount: z.number(),
+    settledQuantity: z.number(),
+    settlementNetAmount: z.number(),
+    settlementCurrency: z.string().regex(/^[A-Z]{3}$/),
   })
   .strict();
 

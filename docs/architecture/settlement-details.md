@@ -24,6 +24,11 @@ The panel uses a server-windowed Client-Side Row Model:
 The design retains bounded browser memory while avoiding a server round trip
 for every exploratory grid-column filter.
 
+Each settlement row also carries traded quantity, trade net amount, settled
+quantity, settlement net amount, and settlement currency. The four measures
+are numeric REST properties and use AG Grid number filters, numeric sorting,
+right alignment, tabular digits, and accounting-style negative formatting.
+
 ## Component interaction
 
 ```text

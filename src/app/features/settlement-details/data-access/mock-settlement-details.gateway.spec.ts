@@ -19,6 +19,13 @@ describe('searchMockSettlementDetails', () => {
     expect(result.rows).toHaveLength(1_000);
     expect(result.rows[0]?.recordId).toBe('settlement-00001001');
     expect(result.rows[999]?.recordId).toBe('settlement-00002000');
+    expect(result.rows[0]).toMatchObject({
+      settlementCurrency: expect.stringMatching(/^[A-Z]{3}$/),
+      settledQuantity: expect.any(Number),
+      settlementNetAmount: expect.any(Number),
+      tradedQuantity: expect.any(Number),
+      tradeNetAmount: expect.any(Number),
+    });
   });
 
   it('applies filters before pagination', () => {

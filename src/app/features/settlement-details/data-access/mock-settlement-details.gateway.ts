@@ -71,6 +71,7 @@ const SECURITIES = [
 ] as const;
 const TRADE_TYPES = ['Buy Long', 'Sell Long', 'Sell Short', 'Cover Short'] as const;
 const BLOTTER_CODES = ['1W', '36', '6X', '6M', '6P', '3W'] as const;
+const SETTLEMENT_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY'] as const;
 
 @Injectable()
 export class MockSettlementDetailsGateway implements SettlementDetailsGateway {
@@ -105,6 +106,14 @@ export function createMockSettlementDetail(index: number): SettlementDetail {
   const manager = MANAGERS[index % MANAGERS.length] ?? MANAGERS[0];
   const security = SECURITIES[index % SECURITIES.length] ?? SECURITIES[0];
   const sequence = String(index + 1).padStart(8, '0');
+  const tradedQuantity = getTradedQuantity(index);
+  const settledQuantity = getSettledQuantity(index, tradedQuantity);
+  const tradeNetAmount = getTradeNetAmount(index, tradedQuantity);
+  const settlementNetAmount = getSettlementNetAmount(
+    tradeNetAmount,
+    tradedQuantity,
+    settledQuantity,
+  );
 
   return {
     recordId: `settlement-${sequence}`,
@@ -128,6 +137,11 @@ export function createMockSettlementDetail(index: number): SettlementDetail {
     source: index % 13 === 0 ? 'Intraday' : 'SOD-Batch',
     tradeType: TRADE_TYPES[index % TRADE_TYPES.length] ?? 'Buy Long',
     tradeId: `TRD-${sequence}`,
+    tradedQuantity,
+    tradeNetAmount,
+    settledQuantity,
+    settlementNetAmount,
+    settlementCurrency: SETTLEMENT_CURRENCIES[index % SETTLEMENT_CURRENCIES.length] ?? 'USD',
   };
 }
 
@@ -233,5 +247,60 @@ function getFieldValue(index: number, field: SettlementDetailField): string {
       return TRADE_TYPES[index % TRADE_TYPES.length] ?? 'Buy Long';
     case 'tradeId':
       return `TRD-${sequence}`;
+    case 'tradedQuantity':
+      return String(getTradedQuantity(index));
+    case 'tradeNetAmount':
+      return String(getTradeNetAmount(index, getTradedQuantity(index)));
+    case 'settledQuantity':
+      return String(getSettledQuantity(index, getTradedQuantity(index)));
+    case 'settlementNetAmount': {
+      const tradedQuantity = getTradedQuantity(index);
+      const settledQuantity = getSettledQuantity(index, tradedQuantity);
+
+      return String(
+        getSettlementNetAmount(
+          getTradeNetAmount(index, tradedQuantity),
+          tradedQuantity,
+          settledQuantity,
+        ),
+      );
+    }
+    case 'settlementCurrency':
+      return SETTLEMENT_CURRENCIES[index % SETTLEMENT_CURRENCIES.length] ?? 'USD';
   }
+}
+
+function getTradedQuantity(index: number): number {
+  const absoluteQuantity = 10_000 + ((index * 37_931) % 1_300_000);
+  const tradeType = TRADE_TYPES[index % TRADE_TYPES.length] ?? 'Buy Long';
+
+  return tradeType.startsWith('Sell') ? -absoluteQuantity : absoluteQuantity;
+}
+
+function getSettledQuantity(index: number, tradedQuantity: number): number {
+  if (index % 5 === 1 || index % 5 === 3) {
+    return 0;
+  }
+
+  const settlementRatio = 0.54 + (index % 7) * 0.06;
+
+  return Math.trunc(tradedQuantity * Math.min(settlementRatio, 1));
+}
+
+function getTradeNetAmount(index: number, tradedQuantity: number): number {
+  const price = 18.25 + (index % 97) * 2.71;
+
+  return Math.round(Math.abs(tradedQuantity) * price * 100) / 100;
+}
+
+function getSettlementNetAmount(
+  tradeNetAmount: number,
+  tradedQuantity: number,
+  settledQuantity: number,
+): number {
+  if (settledQuantity === 0 || tradedQuantity === 0) {
+    return 0;
+  }
+
+  return Math.round(tradeNetAmount * Math.abs(settledQuantity / tradedQuantity) * 100) / 100;
 }

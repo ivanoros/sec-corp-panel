@@ -17,6 +17,7 @@ import type {
   ModelUpdatedEvent,
   SideBarDef,
   ToolPanelVisibleChangedEvent,
+  ValueFormatterParams,
 } from 'ag-grid-community';
 
 import { APP_RUNTIME_CONFIG } from '../../../../core/config/runtime-config';
@@ -35,6 +36,7 @@ interface SettlementColumn {
   readonly headerName: string;
   readonly width: number;
   readonly pinned?: 'left';
+  readonly numericKind?: 'amount' | 'quantity';
 }
 
 type ToolbarFilterField =
@@ -91,7 +93,39 @@ const SETTLEMENT_COLUMNS: readonly SettlementColumn[] = [
   { field: 'source', headerName: 'Source', width: 110 },
   { field: 'tradeType', headerName: 'Trade Type', width: 112 },
   { field: 'tradeId', headerName: 'Trade ID', width: 145 },
+  {
+    field: 'tradedQuantity',
+    headerName: 'Traded Quantity',
+    width: 145,
+    numericKind: 'quantity',
+  },
+  {
+    field: 'tradeNetAmount',
+    headerName: 'Trade Net Amount',
+    width: 165,
+    numericKind: 'amount',
+  },
+  {
+    field: 'settledQuantity',
+    headerName: 'Settled Quantity',
+    width: 145,
+    numericKind: 'quantity',
+  },
+  {
+    field: 'settlementNetAmount',
+    headerName: 'Settlement Net Amount',
+    width: 185,
+    numericKind: 'amount',
+  },
+  { field: 'settlementCurrency', headerName: 'Settlement Currency', width: 155 },
 ] as const;
+
+const QUANTITY_FORMATTER = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 4,
+});
+const AMOUNT_FORMATTER = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 2,
+});
 
 export const SETTLEMENT_COLUMNS_SIDE_BAR: SideBarDef = {
   hiddenByDefault: true,
@@ -342,14 +376,51 @@ export class SettlementDetailsPanelComponent {
 }
 
 export function createSettlementColumnDefs(): ColDef<SettlementDetail>[] {
-  return SETTLEMENT_COLUMNS.map(({ field, headerName, width, pinned }) => ({
-    colId: field,
-    field,
-    headerName,
-    width,
-    ...(pinned === undefined ? {} : { pinned }),
-    tooltipField: field,
-  }));
+  return SETTLEMENT_COLUMNS.map(({ field, headerName, width, pinned, numericKind }) => {
+    const numericDefinition: ColDef<SettlementDetail> =
+      numericKind === undefined
+        ? {}
+        : {
+            cellStyle: ({ value }) => ({
+              color:
+                typeof value === 'number' && value < 0
+                  ? '#ff7b8c'
+                  : numericKind === 'amount'
+                    ? '#89c9a6'
+                    : '#f1f3f3',
+              fontVariantNumeric: 'tabular-nums',
+            }),
+            filter: 'agNumberColumnFilter',
+            type: 'numericColumn',
+            valueFormatter: (params: ValueFormatterParams<SettlementDetail, number>) =>
+              formatAccountingNumber(params.value, numericKind),
+          };
+
+    return {
+      colId: field,
+      field,
+      headerName,
+      width,
+      ...(pinned === undefined ? {} : { pinned }),
+      tooltipField: field,
+      ...numericDefinition,
+    };
+  });
+}
+
+export function formatAccountingNumber(
+  value: number | null | undefined,
+  kind: 'amount' | 'quantity',
+): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return '';
+  }
+
+  const formatted = (kind === 'amount' ? AMOUNT_FORMATTER : QUANTITY_FORMATTER).format(
+    Math.abs(value),
+  );
+
+  return value < 0 ? `(${formatted})` : formatted;
 }
 
 function readControlValue(event: Event): string {

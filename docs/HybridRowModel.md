@@ -243,11 +243,21 @@ records. Clearing or changing this filter also does not call the backend.
       "bookingReferenceId": "31RZZV000000000",
       "source": "SOD-Batch",
       "tradeType": "Buy Long",
-      "tradeId": "TRD-00000001"
+      "tradeId": "TRD-00000001",
+      "tradedQuantity": 795873,
+      "tradeNetAmount": 427655785.25,
+      "settledQuantity": 428355,
+      "settlementNetAmount": 230230879.1,
+      "settlementCurrency": "USD"
     }
   ]
 }
 ```
+
+The four quantity and net-amount properties are JSON numbers so AG Grid can
+sort and filter them numerically inside the loaded 1,000-row window. The
+currency is a required three-letter uppercase code. All five properties are
+required on every response row.
 
 `totalCount` is the count after applying the business date and top criteria,
 before pagination. `rows` contains at most 1,000 records. A valid empty result

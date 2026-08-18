@@ -19,6 +19,11 @@ export const SETTLEMENT_DETAIL_FIELDS = [
   'source',
   'tradeType',
   'tradeId',
+  'tradedQuantity',
+  'tradeNetAmount',
+  'settledQuantity',
+  'settlementNetAmount',
+  'settlementCurrency',
 ] as const;
 
 export type SettlementDetailField = (typeof SETTLEMENT_DETAIL_FIELDS)[number];
@@ -45,6 +50,11 @@ export interface SettlementDetail {
   readonly source: string;
   readonly tradeType: string;
   readonly tradeId: string;
+  readonly tradedQuantity: number;
+  readonly tradeNetAmount: number;
+  readonly settledQuantity: number;
+  readonly settlementNetAmount: number;
+  readonly settlementCurrency: string;
 }
 
 export type SettlementSortDirection = 'asc' | 'desc';
