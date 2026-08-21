@@ -47,6 +47,9 @@ describe('SettlementDetailsPanelComponent', () => {
     expect(
       element.querySelector<HTMLInputElement>('[aria-label="Settlement Date filter"]')?.value,
     ).toBe('2026-08-10');
+    expect(
+      element.querySelector<HTMLSelectElement>('[aria-label="Settlement Date comparison"]')?.value,
+    ).toBe('equals');
   });
 
   it('renders only the approved upper search criteria', () => {
@@ -56,6 +59,7 @@ describe('SettlementDetailsPanelComponent', () => {
     const expectedFilters = [
       'Manager filter',
       'Settlement Date filter',
+      'Settlement Date comparison',
       'Settlement Status filter',
       'Product filter',
     ];
@@ -89,7 +93,7 @@ describe('SettlementDetailsPanelComponent', () => {
     );
   });
 
-  it('updates the server-side business date and toolbar criteria', () => {
+  it('updates the server-side Settlement Date operator, date, and toolbar criteria', () => {
     const fixture = TestBed.createComponent(SettlementDetailsPanelComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;
@@ -100,14 +104,20 @@ describe('SettlementDetailsPanelComponent', () => {
     const statusSelect = element.querySelector<HTMLSelectElement>(
       '[aria-label="Settlement Status filter"]',
     );
+    const dateOperatorSelect = element.querySelector<HTMLSelectElement>(
+      '[aria-label="Settlement Date comparison"]',
+    );
 
     expect(dateInput).not.toBeNull();
+    expect(dateOperatorSelect).not.toBeNull();
     expect(statusSelect).not.toBeNull();
 
-    if (dateInput === null || statusSelect === null) {
+    if (dateInput === null || dateOperatorSelect === null || statusSelect === null) {
       return;
     }
 
+    dateOperatorSelect.value = 'greaterThanOrEqual';
+    dateOperatorSelect.dispatchEvent(new Event('change'));
     dateInput.value = '2026-08-11';
     dateInput.dispatchEvent(new Event('change'));
     statusSelect.value = 'Failed';
@@ -115,6 +125,7 @@ describe('SettlementDetailsPanelComponent', () => {
     fixture.detectChanges();
 
     expect(component.settlementDate()).toBe('2026-08-11');
+    expect(component.settlementDateOperator()).toBe('greaterThanOrEqual');
     expect(component.toolbarFilters().settlementStatus).toBe('Failed');
   });
 
@@ -236,8 +247,50 @@ describe('SettlementDetailsPanelComponent', () => {
     expect(loadPage).toHaveBeenCalledOnce();
     expect(loadPage).toHaveBeenCalledWith(
       {
-        businessDate: '2026-08-10',
+        settlementDate: { operator: 'equals', value: '2026-08-10' },
         filters: [{ field: 'settlementStatus', operator: 'equals', value: 'Failed' }],
+      },
+      0,
+    );
+  });
+
+  it('reloads page one for date comparisons and Clear restores equals', () => {
+    const fixture = TestBed.createComponent(SettlementDetailsPanelComponent);
+    const store = fixture.debugElement.injector.get(SettlementDetailsWindowStore);
+    const loadPage = vi.spyOn(store, 'loadPage');
+
+    fixture.detectChanges();
+    loadPage.mockClear();
+
+    const operatorSelect = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '[aria-label="Settlement Date comparison"]',
+    );
+
+    expect(operatorSelect).not.toBeNull();
+
+    if (operatorSelect === null) {
+      return;
+    }
+
+    operatorSelect.value = 'lessThanOrEqual';
+    operatorSelect.dispatchEvent(new Event('change'));
+
+    expect(loadPage).toHaveBeenLastCalledWith(
+      {
+        settlementDate: { operator: 'lessThanOrEqual', value: '2026-08-10' },
+        filters: [],
+      },
+      0,
+    );
+    expect(fixture.componentInstance.activeServerFilterCount()).toBe(1);
+
+    fixture.componentInstance.clearFilters();
+
+    expect(fixture.componentInstance.settlementDateOperator()).toBe('equals');
+    expect(loadPage).toHaveBeenLastCalledWith(
+      {
+        settlementDate: { operator: 'equals', value: '2026-08-10' },
+        filters: [],
       },
       0,
     );

@@ -8,16 +8,16 @@ This is intentionally different from AG Grid's Server-Side Row Model (SSRM).
 
 ## What calls the backend
 
-| User action                      | Backend request? | Behavior                                     |
-| -------------------------------- | ---------------- | -------------------------------------------- |
-| Open the panel                   | Yes              | Fetch server page 1 with up to 1,000 rows.   |
-| Change a top criterion           | Yes              | Fetch page 1 using all top criteria.         |
-| Change Settlement Date           | Yes              | Fetch page 1 for the new business date.      |
-| Move to another server page      | Yes              | Fetch that 1,000-row server window.          |
-| Click Refresh                    | Yes              | Reload the current server page and criteria. |
-| Use a grid-column filter         | No               | Filter only the currently loaded rows.       |
-| Sort a grid column               | No               | Sort only the currently loaded rows.         |
-| Open or change the Column Picker | No               | Change only the grid presentation.           |
+| User action                        | Backend request? | Behavior                                     |
+| ---------------------------------- | ---------------- | -------------------------------------------- |
+| Open the panel                     | Yes              | Fetch server page 1 with up to 1,000 rows.   |
+| Change a top criterion             | Yes              | Fetch page 1 using all top criteria.         |
+| Change Settlement Date or operator | Yes              | Fetch page 1 for the new date criterion.     |
+| Move to another server page        | Yes              | Fetch that 1,000-row server window.          |
+| Click Refresh                      | Yes              | Reload the current server page and criteria. |
+| Use a grid-column filter           | No               | Filter only the currently loaded rows.       |
+| Sort a grid column                 | No               | Sort only the currently loaded rows.         |
+| Open or change the Column Picker   | No               | Change only the grid presentation.           |
 
 The panel makes the local scope visible with the message: **Grid filters search
 this 1,000-row page only**.
@@ -32,7 +32,10 @@ The request envelope remains backend-focused:
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 0,
   "limit": 1000,
   "filters": [],
@@ -40,27 +43,39 @@ The request envelope remains backend-focused:
 }
 ```
 
-| Property        | Meaning                                                          |
-| --------------- | ---------------------------------------------------------------- |
-| `schemaVersion` | Version of this request contract. Currently `1`.                 |
-| `userId`        | Authenticated user making the request.                           |
-| `businessDate`  | Required settlement-date scope in `YYYY-MM-DD` format.           |
-| `offset`        | Zero-based start of the requested server window.                 |
-| `limit`         | Requested window size. The current value and maximum are `1000`. |
-| `filters`       | Top-criteria filters only.                                       |
-| `sort`          | Empty because grid-column sorting is local to the loaded window. |
+| Property         | Meaning                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| `schemaVersion`  | Version of this request contract. Currently `1`.                     |
+| `userId`         | Authenticated user making the request.                               |
+| `settlementDate` | Required typed date criterion containing `operator` and ISO `value`. |
+| `offset`         | Zero-based start of the requested server window.                     |
+| `limit`          | Requested window size. The current value and maximum are `1000`.     |
+| `filters`        | Top-criteria filters only.                                           |
+| `sort`           | Empty because grid-column sorting is local to the loaded window.     |
 
 ## Top-criteria mapping
 
-| UI control        | Request mapping                        | Operator       |
-| ----------------- | -------------------------------------- | -------------- |
-| Manager           | `filters[].field = "managerName"`      | `contains`     |
-| Settlement Date   | top-level `businessDate`               | Not applicable |
-| Settlement Status | `filters[].field = "settlementStatus"` | `equals`       |
-| Product           | `filters[].field = "productId"`        | `contains`     |
+| UI control        | Request mapping                        | Operator            |
+| ----------------- | -------------------------------------- | ------------------- |
+| Manager           | `filters[].field = "managerName"`      | `contains`          |
+| Settlement Date   | top-level `settlementDate`             | Selected comparison |
+| Settlement Status | `filters[].field = "settlementStatus"` | `equals`            |
+| Product           | `filters[].field = "productId"`        | `contains`          |
 
 Blank controls are omitted. Multiple criteria are combined with logical `AND`.
 Text inputs are debounced for 350 milliseconds; dropdowns request immediately.
+The date operator uses descriptive API values rather than display symbols:
+
+| UI  | Request `operator`   | Meaning      |
+| --- | -------------------- | ------------ |
+| `<` | `lessThan`           | Before       |
+| `≤` | `lessThanOrEqual`    | On or before |
+| `=` | `equals`             | On           |
+| `>` | `greaterThan`        | After        |
+| `≥` | `greaterThanOrEqual` | On or after  |
+
+`equals` is the initial default. Clear All Filters restores `equals` but keeps
+the selected date. Operator and date changes reset pagination to page 1.
 
 ## Request examples
 
@@ -70,7 +85,10 @@ Text inputs are debounced for 350 milliseconds; dropdowns request immediately.
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 0,
   "limit": 1000,
   "filters": [],
@@ -84,7 +102,10 @@ Text inputs are debounced for 350 milliseconds; dropdowns request immediately.
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 0,
   "limit": 1000,
   "filters": [
@@ -111,13 +132,16 @@ Text inputs are debounced for 350 milliseconds; dropdowns request immediately.
 ### Next server page
 
 Every server page contains up to 1,000 records. Page 2 starts at offset 1,000.
-The active business date and top criteria are repeated.
+The active Settlement Date criterion and top criteria are repeated.
 
 ```json
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 1000,
   "limit": 1000,
   "filters": [
@@ -137,7 +161,10 @@ The active business date and top criteria are repeated.
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-11",
+  "settlementDate": {
+    "operator": "greaterThanOrEqual",
+    "value": "2026-08-11"
+  },
   "offset": 0,
   "limit": 1000,
   "filters": [],
@@ -154,14 +181,17 @@ property or endpoint.
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 3000,
   "limit": 1000,
   "filters": [
     {
-      "field": "source",
+      "field": "settlementStatus",
       "operator": "equals",
-      "value": "SOD-Batch"
+      "value": "Pending"
     }
   ],
   "sort": []
@@ -223,14 +253,15 @@ sort and filter them numerically inside the loaded 1,000-row window. The
 currency is a required three-letter uppercase code. All five properties are
 required on every response row.
 
-`totalCount` is the count after applying the business date and top criteria,
+`totalCount` is the count after applying the Settlement Date criterion and top criteria,
 before pagination. `rows` contains at most 1,000 records. A valid empty result
 returns HTTP 200, `totalCount: 0`, and `rows: []`.
 
 ## Backend processing order
 
 1. Validate the request and allow-list all filter fields and operators.
-2. Apply `businessDate`.
+2. Apply `settlementDate.operator` to the stored settlement date using
+   `settlementDate.value` as a date-only value.
 3. Apply all top-criteria filters with logical `AND`.
 4. Calculate the filtered `totalCount`.
 5. Apply a stable default order with `recordId` as a deterministic tie-breaker.

@@ -8,7 +8,7 @@ describe('searchMockSettlementDetails', () => {
     const result = searchMockSettlementDetails({
       schemaVersion: 1,
       userId: 'e70165',
-      businessDate: '2026-08-10',
+      settlementDate: { operator: 'lessThanOrEqual', value: '2026-08-31' },
       offset: 1_000,
       limit: 1_000,
       filters: [],
@@ -32,7 +32,7 @@ describe('searchMockSettlementDetails', () => {
     const result = searchMockSettlementDetails({
       schemaVersion: 1,
       userId: 'e70165',
-      businessDate: '2026-08-10',
+      settlementDate: { operator: 'lessThanOrEqual', value: '2026-08-31' },
       offset: 0,
       limit: 25,
       filters: [{ field: 'settlementStatus', operator: 'equals', value: 'Failed' }],
@@ -43,5 +43,31 @@ describe('searchMockSettlementDetails', () => {
     expect(result.totalCount).toBeLessThan(MOCK_SETTLEMENT_DETAIL_COUNT);
     expect(result.rows).toHaveLength(25);
     expect(result.rows.every(({ settlementStatus }) => settlementStatus === 'Failed')).toBe(true);
+  });
+
+  it('applies every Settlement Date comparison before pagination', () => {
+    const search = (
+      operator: 'lessThan' | 'lessThanOrEqual' | 'equals' | 'greaterThan' | 'greaterThanOrEqual',
+    ) =>
+      searchMockSettlementDetails({
+        schemaVersion: 1,
+        userId: 'e70165',
+        settlementDate: { operator, value: '2026-08-10' },
+        offset: 0,
+        limit: 25,
+        filters: [],
+        sort: [],
+      }).totalCount;
+
+    const before = search('lessThan');
+    const onOrBefore = search('lessThanOrEqual');
+    const on = search('equals');
+    const after = search('greaterThan');
+    const onOrAfter = search('greaterThanOrEqual');
+
+    expect(on).toBeGreaterThan(0);
+    expect(onOrBefore).toBe(before + on);
+    expect(onOrAfter).toBe(after + on);
+    expect(before + on + after).toBe(MOCK_SETTLEMENT_DETAIL_COUNT);
   });
 });

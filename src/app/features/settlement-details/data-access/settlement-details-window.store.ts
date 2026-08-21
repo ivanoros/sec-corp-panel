@@ -4,6 +4,7 @@ import { finalize, type Subscription } from 'rxjs';
 import { APP_RUNTIME_CONFIG } from '../../../core/config/runtime-config';
 import type {
   SettlementDetail,
+  SettlementDateCriterion,
   SettlementDetailsSearchQuery,
   SettlementDetailsSearchResult,
   SettlementTextFilter,
@@ -13,7 +14,7 @@ import { SETTLEMENT_DETAILS_GATEWAY } from './settlement-details.gateway';
 export const SETTLEMENT_DETAILS_WINDOW_SIZE = 1_000;
 
 export interface SettlementDetailsWindowCriteria {
-  readonly businessDate: string;
+  readonly settlementDate: SettlementDateCriterion;
   readonly filters: readonly SettlementTextFilter[];
 }
 
@@ -115,7 +116,7 @@ export function createSettlementDetailsWindowQuery(
   return {
     schemaVersion: 1,
     userId,
-    businessDate: criteria.businessDate,
+    settlementDate: { ...criteria.settlementDate },
     offset: normalizedPageIndex * SETTLEMENT_DETAILS_WINDOW_SIZE,
     limit: SETTLEMENT_DETAILS_WINDOW_SIZE,
     filters: [...criteria.filters],

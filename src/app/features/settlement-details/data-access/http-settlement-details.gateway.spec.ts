@@ -41,7 +41,7 @@ describe('HttpSettlementDetailsGateway', () => {
     const query = {
       schemaVersion: 1 as const,
       userId: 'e70165',
-      businessDate: '2026-08-10',
+      settlementDate: { operator: 'equals' as const, value: '2026-08-10' },
       offset: 0,
       limit: 100,
       filters: [{ field: 'managerName' as const, operator: 'contains' as const, value: 'Capital' }],
@@ -69,7 +69,7 @@ describe('HttpSettlementDetailsGateway', () => {
       gateway.search({
         schemaVersion: 1,
         userId: 'e70165',
-        businessDate: '2026-08-10',
+        settlementDate: { operator: 'equals', value: '2026-08-10' },
         offset: 0,
         limit: 100,
         filters: [],

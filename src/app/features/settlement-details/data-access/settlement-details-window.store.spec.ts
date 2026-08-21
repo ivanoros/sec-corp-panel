@@ -5,7 +5,7 @@ describe('createSettlementDetailsWindowQuery', () => {
     expect(
       createSettlementDetailsWindowQuery(
         {
-          businessDate: '2026-08-10',
+          settlementDate: { operator: 'greaterThanOrEqual', value: '2026-08-10' },
           filters: [
             { field: 'managerName', operator: 'contains', value: 'Capital' },
             { field: 'settlementStatus', operator: 'equals', value: 'Pending' },
@@ -17,7 +17,7 @@ describe('createSettlementDetailsWindowQuery', () => {
     ).toEqual({
       schemaVersion: 1,
       userId: 'e70165',
-      businessDate: '2026-08-10',
+      settlementDate: { operator: 'greaterThanOrEqual', value: '2026-08-10' },
       offset: 2_000,
       limit: 1_000,
       filters: [
@@ -30,7 +30,11 @@ describe('createSettlementDetailsWindowQuery', () => {
 
   it('normalizes an invalid page index to the first backend window', () => {
     expect(
-      createSettlementDetailsWindowQuery({ businessDate: '2026-08-10', filters: [] }, -4, 'e70165'),
+      createSettlementDetailsWindowQuery(
+        { settlementDate: { operator: 'equals', value: '2026-08-10' }, filters: [] },
+        -4,
+        'e70165',
+      ),
     ).toMatchObject({ offset: 0, limit: 1_000 });
   });
 });

@@ -4,6 +4,7 @@ import { defer, delay, of, type Observable } from 'rxjs';
 import type {
   SettlementDetail,
   SettlementDetailField,
+  SettlementDateCriterion,
   SettlementDetailsSearchQuery,
   SettlementDetailsSearchResult,
   SettlementSort,
@@ -72,6 +73,8 @@ const SECURITIES = [
 const TRADE_TYPES = ['Buy Long', 'Sell Long', 'Sell Short', 'Cover Short'] as const;
 const BLOTTER_CODES = ['1W', '36', '6X', '6M', '6P', '3W'] as const;
 const SETTLEMENT_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY'] as const;
+const MOCK_SETTLEMENT_DATE_START_UTC = Date.UTC(2026, 6, 1);
+const MOCK_SETTLEMENT_DATE_SPAN_DAYS = 62;
 
 @Injectable()
 export class MockSettlementDetailsGateway implements SettlementDetailsGateway {
@@ -85,18 +88,16 @@ export class MockSettlementDetailsGateway implements SettlementDetailsGateway {
 export function searchMockSettlementDetails(
   query: SettlementDetailsSearchQuery,
 ): SettlementDetailsSearchResult {
-  const directPage = query.filters.length === 0 && query.sort.length === 0;
-  const indices = directPage ? null : selectIndices(query);
-  const totalCount = indices?.length ?? MOCK_SETTLEMENT_DETAIL_COUNT;
+  const indices = selectIndices(query);
+  const totalCount = indices.length;
   const pageLength = Math.max(0, Math.min(query.limit, totalCount - query.offset));
   const pageIndices =
-    indices?.slice(query.offset, query.offset + query.limit) ??
-    Array.from({ length: pageLength }, (_, pageIndex) => query.offset + pageIndex);
+    pageLength === 0 ? [] : indices.slice(query.offset, query.offset + query.limit);
 
   return {
     schemaVersion: 1,
-    requestId: `mock-${query.businessDate}-${query.offset}-${query.limit}`,
-    asOf: `${query.businessDate}T14:00:00-04:00`,
+    requestId: `mock-${query.settlementDate.value}-${query.offset}-${query.limit}`,
+    asOf: `${query.settlementDate.value}T14:00:00-04:00`,
     totalCount,
     rows: pageIndices.map((index) => createMockSettlementDetail(index)),
   };
@@ -149,7 +150,10 @@ function selectIndices(query: SettlementDetailsSearchQuery): number[] {
   const indices: number[] = [];
 
   for (let index = 0; index < MOCK_SETTLEMENT_DETAIL_COUNT; index += 1) {
-    if (query.filters.every((filter) => matchesFilter(index, filter))) {
+    if (
+      matchesSettlementDate(index, query.settlementDate) &&
+      query.filters.every((filter) => matchesFilter(index, filter))
+    ) {
       indices.push(index);
     }
   }
@@ -159,6 +163,31 @@ function selectIndices(query: SettlementDetailsSearchQuery): number[] {
   }
 
   return indices;
+}
+
+function matchesSettlementDate(index: number, criterion: SettlementDateCriterion): boolean {
+  const actual = getMockSettlementDate(index);
+
+  switch (criterion.operator) {
+    case 'lessThan':
+      return actual < criterion.value;
+    case 'lessThanOrEqual':
+      return actual <= criterion.value;
+    case 'equals':
+      return actual === criterion.value;
+    case 'greaterThan':
+      return actual > criterion.value;
+    case 'greaterThanOrEqual':
+      return actual >= criterion.value;
+  }
+}
+
+function getMockSettlementDate(index: number): string {
+  const epochMilliseconds =
+    MOCK_SETTLEMENT_DATE_START_UTC +
+    (index % MOCK_SETTLEMENT_DATE_SPAN_DAYS) * 24 * 60 * 60 * 1_000;
+
+  return new Date(epochMilliseconds).toISOString().slice(0, 10);
 }
 
 function compareIndices(left: number, right: number, sort: readonly SettlementSort[]): number {

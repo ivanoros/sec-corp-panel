@@ -28,8 +28,10 @@ import { SettlementDetailsWindowStore } from '../../data-access/settlement-detai
 import type {
   SettlementDetail,
   SettlementDetailField,
+  SettlementDateOperator,
   SettlementTextFilter,
 } from '../../domain/settlement-detail';
+import { SETTLEMENT_DATE_OPERATORS } from '../../domain/settlement-detail';
 
 interface SettlementColumn {
   readonly field: SettlementDetailField;
@@ -50,6 +52,22 @@ const EMPTY_TOOLBAR_FILTERS: ToolbarFilterValues = {
 };
 
 const EXACT_MATCH_TOOLBAR_FIELDS = new Set<ToolbarFilterField>(['settlementStatus']);
+
+interface SettlementDateOperatorOption {
+  readonly label: string;
+  readonly description: string;
+  readonly value: SettlementDateOperator;
+}
+
+const DEFAULT_SETTLEMENT_DATE_OPERATOR: SettlementDateOperator = 'equals';
+
+export const SETTLEMENT_DATE_OPERATOR_OPTIONS: readonly SettlementDateOperatorOption[] = [
+  { label: '<', description: 'Before', value: 'lessThan' },
+  { label: '≤', description: 'On or before', value: 'lessThanOrEqual' },
+  { label: '=', description: 'On', value: 'equals' },
+  { label: '>', description: 'After', value: 'greaterThan' },
+  { label: '≥', description: 'On or after', value: 'greaterThanOrEqual' },
+];
 
 const SETTLEMENT_COLUMNS: readonly SettlementColumn[] = [
   { field: 'settlementMode', headerName: 'Settlement Mode', width: 132, pinned: 'left' },
@@ -162,9 +180,15 @@ export class SettlementDetailsPanelComponent {
   readonly displayedRowCount = signal(0);
   readonly columnChooserOpen = signal(false);
   readonly settlementDate = signal(this.runtimeConfig.businessDate);
+  readonly settlementDateOperator = signal<SettlementDateOperator>(
+    DEFAULT_SETTLEMENT_DATE_OPERATOR,
+  );
+  readonly settlementDateOperatorOptions = SETTLEMENT_DATE_OPERATOR_OPTIONS;
   readonly toolbarFilters = signal<ToolbarFilterValues>(EMPTY_TOOLBAR_FILTERS);
   readonly activeServerFilterCount = computed(
-    () => Object.values(this.toolbarFilters()).filter((value) => value.length > 0).length,
+    () =>
+      Object.values(this.toolbarFilters()).filter((value) => value.length > 0).length +
+      (this.settlementDateOperator() === DEFAULT_SETTLEMENT_DATE_OPERATOR ? 0 : 1),
   );
   readonly activeFilterCount = computed(
     () => this.activeServerFilterCount() + this.localFilterCount(),
@@ -224,6 +248,7 @@ export class SettlementDetailsPanelComponent {
 
     this.cancelToolbarFilterTimer();
     this.toolbarFilters.set(EMPTY_TOOLBAR_FILTERS);
+    this.settlementDateOperator.set(DEFAULT_SETTLEMENT_DATE_OPERATOR);
     this.gridApi()?.setFilterModel(null);
 
     if (hadServerFilters) {
@@ -232,14 +257,26 @@ export class SettlementDetailsPanelComponent {
   }
 
   updateSettlementDate(event: Event): void {
-    const businessDate = readControlValue(event);
+    const settlementDate = readControlValue(event);
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(businessDate) || businessDate === this.settlementDate()) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(settlementDate) || settlementDate === this.settlementDate()) {
       return;
     }
 
     this.cancelToolbarFilterTimer();
-    this.settlementDate.set(businessDate);
+    this.settlementDate.set(settlementDate);
+    this.loadServerPage(0);
+  }
+
+  updateSettlementDateOperator(event: Event): void {
+    const operator = readControlValue(event);
+
+    if (!isSettlementDateOperator(operator) || operator === this.settlementDateOperator()) {
+      return;
+    }
+
+    this.cancelToolbarFilterTimer();
+    this.settlementDateOperator.set(operator);
     this.loadServerPage(0);
   }
 
@@ -335,12 +372,19 @@ export class SettlementDetailsPanelComponent {
   private loadServerPage(pageIndex: number): void {
     this.windowStore.loadPage(
       {
-        businessDate: this.settlementDate(),
+        settlementDate: {
+          operator: this.settlementDateOperator(),
+          value: this.settlementDate(),
+        },
         filters: mapToolbarFilters(this.toolbarFilters()),
       },
       pageIndex,
     );
   }
+}
+
+function isSettlementDateOperator(value: string): value is SettlementDateOperator {
+  return SETTLEMENT_DATE_OPERATORS.some((operator) => operator === value);
 }
 
 export function createSettlementColumnDefs(): ColDef<SettlementDetail>[] {

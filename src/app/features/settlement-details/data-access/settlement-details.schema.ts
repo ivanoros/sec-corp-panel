@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { SETTLEMENT_DETAIL_FIELDS } from '../domain/settlement-detail';
+import { SETTLEMENT_DATE_OPERATORS, SETTLEMENT_DETAIL_FIELDS } from '../domain/settlement-detail';
 
-const businessDateSchema = z.iso.date();
+const settlementDateValueSchema = z.iso.date();
 const identifierSchema = z.string().trim().min(1).max(160);
 const settlementDetailFieldSchema = z.enum(SETTLEMENT_DETAIL_FIELDS);
 const settlementDetailSchema = z
@@ -40,7 +40,12 @@ export const settlementDetailsSearchRequestSchema = z
   .object({
     schemaVersion: z.literal(1),
     userId: identifierSchema,
-    businessDate: businessDateSchema,
+    settlementDate: z
+      .object({
+        operator: z.enum(SETTLEMENT_DATE_OPERATORS),
+        value: settlementDateValueSchema,
+      })
+      .strict(),
     offset: z.number().int().nonnegative(),
     limit: z.number().int().min(1).max(1_000),
     filters: z.array(

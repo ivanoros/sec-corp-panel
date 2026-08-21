@@ -60,7 +60,10 @@ from replacing a newer page.
 {
   "schemaVersion": 1,
   "userId": "e70165",
-  "businessDate": "2026-08-10",
+  "settlementDate": {
+    "operator": "equals",
+    "value": "2026-08-10"
+  },
   "offset": 0,
   "limit": 1000,
   "filters": [
@@ -90,7 +93,7 @@ The complete request catalog is in
 
 | State                                     | Owner                | Scope                   |
 | ----------------------------------------- | -------------------- | ----------------------- |
-| Business date                             | Panel signal         | Server query            |
+| Settlement Date value and operator        | Panel signals        | Server query            |
 | Top criteria                              | Panel signal         | Entire backend data set |
 | Current page, rows, total, loading, error | Window store signals | Server window           |
 | Floating column filters                   | AG Grid              | Loaded 1,000 rows only  |
@@ -114,6 +117,9 @@ column-filter change cannot accidentally generate an HTTP request.
   prevents users from mistaking a local result for a database-wide result.
 - Sorting is also local because that is the natural behavior of the Client-Side
   Row Model. The backend supplies a stable default order for page navigation.
+- The Settlement Date control is a joined native operator dropdown and date
+  input. Its typed REST criterion avoids ambiguous symbols in backend code;
+  `equals` is the default and Clear restores it without changing the date.
 - Row-selection checkboxes remain excluded because there is no defined action
   or cross-page selection contract.
 

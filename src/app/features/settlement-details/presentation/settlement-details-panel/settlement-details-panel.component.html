@@ -67,16 +67,34 @@
         (input)="updateToolbarTextFilter('managerName', $event)"
       />
     </label>
-    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--date">
+    <div class="settlement-details-panel__criterion settlement-details-panel__criterion--date">
       <span>Settlement Date</span>
-      <input
-        aria-label="Settlement Date filter"
-        required
-        type="date"
-        [value]="settlementDate()"
-        (change)="updateSettlementDate($event)"
-      />
-    </label>
+      <div class="settlement-details-panel__date-control">
+        <select
+          aria-label="Settlement Date comparison"
+          title="Settlement Date comparison"
+          [value]="settlementDateOperator()"
+          (change)="updateSettlementDateOperator($event)"
+        >
+          @for (option of settlementDateOperatorOptions; track option.value) {
+            <option
+              [selected]="option.value === settlementDateOperator()"
+              [title]="option.description"
+              [value]="option.value"
+            >
+              {{ option.label }}
+            </option>
+          }
+        </select>
+        <input
+          aria-label="Settlement Date filter"
+          required
+          type="date"
+          [value]="settlementDate()"
+          (change)="updateSettlementDate($event)"
+        />
+      </div>
+    </div>
     <label class="settlement-details-panel__criterion">
       <span>Settlement Status</span>
       <select

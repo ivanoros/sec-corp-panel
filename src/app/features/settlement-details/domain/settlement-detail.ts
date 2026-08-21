@@ -80,10 +80,25 @@ export interface SettlementTextFilter {
   readonly value: string | null;
 }
 
+export const SETTLEMENT_DATE_OPERATORS = [
+  'lessThan',
+  'lessThanOrEqual',
+  'equals',
+  'greaterThan',
+  'greaterThanOrEqual',
+] as const;
+
+export type SettlementDateOperator = (typeof SETTLEMENT_DATE_OPERATORS)[number];
+
+export interface SettlementDateCriterion {
+  readonly operator: SettlementDateOperator;
+  readonly value: string;
+}
+
 export interface SettlementDetailsSearchQuery {
   readonly schemaVersion: 1;
   readonly userId: string;
-  readonly businessDate: string;
+  readonly settlementDate: SettlementDateCriterion;
   readonly offset: number;
   readonly limit: number;
   readonly filters: readonly SettlementTextFilter[];

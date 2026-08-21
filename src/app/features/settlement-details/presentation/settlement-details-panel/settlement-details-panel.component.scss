@@ -76,16 +76,8 @@
   line-height: 12px;
 }
 
-.settlement-details-panel__criterion--compact {
-  flex-basis: 92px;
-}
-
 .settlement-details-panel__criterion--date {
-  flex-basis: 126px;
-}
-
-.settlement-details-panel__criterion--wide {
-  flex-basis: 148px;
+  flex-basis: 184px;
 }
 
 .settlement-details-panel__criteria-action {
@@ -117,6 +109,21 @@
 
 .settlement-details-panel__criterion input::placeholder {
   color: #778080;
+}
+
+.settlement-details-panel__date-control {
+  display: flex;
+}
+
+.settlement-details-panel__date-control select {
+  width: 48px;
+  border-radius: 2px 0 0 2px;
+  font-weight: 700;
+}
+
+.settlement-details-panel__date-control input {
+  margin-left: -1px;
+  border-radius: 0 2px 2px 0;
 }
 
 .settlement-details-panel__record-count {
