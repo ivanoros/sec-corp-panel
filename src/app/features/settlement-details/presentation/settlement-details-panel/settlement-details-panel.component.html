@@ -78,32 +78,6 @@
       />
     </label>
     <label class="settlement-details-panel__criterion">
-      <span>Settlement Mode</span>
-      <select
-        aria-label="Settlement Mode filter"
-        [value]="toolbarFilters().settlementMode"
-        (change)="updateToolbarSelectFilter('settlementMode', $event)"
-      >
-        <option value="">All</option>
-        @for (option of settlementModeOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--wide">
-      <span>Activity Type</span>
-      <select
-        aria-label="Activity Type filter"
-        [value]="toolbarFilters().activityType"
-        (change)="updateToolbarSelectFilter('activityType', $event)"
-      >
-        <option value="">All</option>
-        @for (option of activityTypeOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <label class="settlement-details-panel__criterion">
       <span>Settlement Status</span>
       <select
         aria-label="Settlement Status filter"
@@ -115,54 +89,6 @@
           <option [value]="option">{{ option }}</option>
         }
       </select>
-    </label>
-    <label class="settlement-details-panel__criterion settlement-details-panel__criterion--compact">
-      <span>Blotter Code</span>
-      <input
-        aria-label="Blotter Code filter"
-        autocomplete="off"
-        placeholder="All"
-        type="search"
-        [value]="toolbarFilters().blotterCode"
-        (input)="updateToolbarTextFilter('blotterCode', $event)"
-      />
-    </label>
-    <label class="settlement-details-panel__criterion">
-      <span>Source</span>
-      <select
-        aria-label="Source filter"
-        [value]="toolbarFilters().source"
-        (change)="updateToolbarSelectFilter('source', $event)"
-      >
-        <option value="">All</option>
-        @for (option of sourceOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <label class="settlement-details-panel__criterion">
-      <span>Trade Type</span>
-      <select
-        aria-label="Trade Type filter"
-        [value]="toolbarFilters().tradeType"
-        (change)="updateToolbarSelectFilter('tradeType', $event)"
-      >
-        <option value="">All</option>
-        @for (option of tradeTypeOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <label class="settlement-details-panel__criterion">
-      <span>Trade ID</span>
-      <input
-        aria-label="Trade ID filter"
-        autocomplete="off"
-        placeholder="All"
-        type="search"
-        [value]="toolbarFilters().tradeId"
-        (input)="updateToolbarTextFilter('tradeId', $event)"
-      />
     </label>
     <label class="settlement-details-panel__criterion">
       <span>Product</span>

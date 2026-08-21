@@ -14,25 +14,18 @@
 }
 
 .settlements-shell__workspace {
-  --settlements-left-rail: 14%;
-  --settlements-right-summary: 23%;
+  --settlements-left-rail: 30%;
   --settlements-top-row: 24%;
-  --settlements-totals-row: 18%;
 
   position: relative;
   display: grid;
   width: 100%;
   height: 100%;
-  grid-template-columns:
-    var(--settlements-left-rail) minmax(0, 1fr)
-    var(--settlements-right-summary);
-  grid-template-rows:
-    var(--settlements-top-row) minmax(0, 1fr)
-    var(--settlements-totals-row);
+  grid-template-columns: var(--settlements-left-rail) minmax(0, 1fr);
+  grid-template-rows: var(--settlements-top-row) minmax(0, 1fr);
   grid-template-areas:
-    'netCash chart movement'
-    'projections details details'
-    'totals details details';
+    'failProjection chart'
+    'details details';
   gap: 6px;
   min-width: 0;
   min-height: 0;
@@ -45,24 +38,12 @@
   user-select: none;
 }
 
-.settlements-shell__net-cash {
-  grid-area: netCash;
+.settlements-shell__fail-projection {
+  grid-area: failProjection;
 }
 
 .settlements-shell__chart {
   grid-area: chart;
-}
-
-.settlements-shell__movement {
-  grid-area: movement;
-}
-
-.settlements-shell__projections {
-  grid-area: projections;
-}
-
-.settlements-shell__totals {
-  grid-area: totals;
 }
 
 .settlements-shell__details {
@@ -101,11 +82,10 @@
   outline-offset: 1px;
 }
 
-.settlements-shell__resize-handle--left,
-.settlements-shell__resize-handle--right {
+.settlements-shell__resize-handle--left {
   top: 6px;
   width: 10px;
-  height: calc(100% - 12px);
+  height: calc(var(--settlements-top-row) - 6px);
   cursor: col-resize;
   transform: translateX(-50%);
 }
@@ -114,15 +94,7 @@
   left: calc(6px + var(--settlements-left-rail));
 }
 
-.settlements-shell__resize-handle--right {
-  top: 6px;
-  right: calc(6px + var(--settlements-right-summary));
-  height: calc(var(--settlements-top-row) - 6px);
-  transform: translateX(50%);
-}
-
-.settlements-shell__resize-handle--top,
-.settlements-shell__resize-handle--totals {
+.settlements-shell__resize-handle--top {
   left: 6px;
   height: 10px;
   cursor: row-resize;
@@ -132,12 +104,6 @@
 .settlements-shell__resize-handle--top {
   top: calc(6px + var(--settlements-top-row));
   width: calc(100% - 12px);
-}
-
-.settlements-shell__resize-handle--totals {
-  bottom: calc(6px + var(--settlements-totals-row));
-  width: var(--settlements-left-rail);
-  transform: translateY(50%);
 }
 
 .settlements-shell__reset-layout {
@@ -195,14 +161,12 @@
 
   .settlements-shell__workspace {
     grid-template-columns: minmax(160px, 30%) minmax(560px, 1fr);
-    grid-template-rows: 150px 210px 120px minmax(500px, 1fr);
+    grid-template-rows: 150px minmax(500px, 1fr);
     grid-template-areas:
-      'netCash chart'
-      'projections movement'
-      'totals movement'
+      'failProjection chart'
       'details details';
     min-width: 760px;
-    min-height: 1000px;
+    min-height: 680px;
   }
 
   .settlements-shell__resize-handle,

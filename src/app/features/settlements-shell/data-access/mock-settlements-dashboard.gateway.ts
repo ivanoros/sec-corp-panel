@@ -26,9 +26,19 @@ export function createMockSettlementsDashboard(businessDate: string): Settlement
     requestId: `mock-settlements-dashboard-${businessDate}`,
     businessDate,
     asOf: `${businessDate}T14:00:00-04:00`,
-    netCashPositions: {
-      pbil: '9705.00',
-      secCorp: '-2797.00',
+    failProjection: {
+      settled: {
+        sellTrades: '4362839957.00',
+        buyTrades: '4362839957.00',
+      },
+      pending: {
+        sellTrades: '4362839957.00',
+        buyTrades: '4362839957.00',
+      },
+      fails: {
+        sellTrades: '4362839957.00',
+        buyTrades: '4362839957.00',
+      },
     },
     cashPositionsOverTime: [
       { time: '08:00', pbil: '10240.00', secCorp: '-1460.00' },

@@ -49,25 +49,30 @@ describe('SettlementDetailsPanelComponent', () => {
     ).toBe('2026-08-10');
   });
 
-  it('renders the screenshot-derived search criteria', () => {
+  it('renders only the approved upper search criteria', () => {
     const fixture = TestBed.createComponent(SettlementDetailsPanelComponent);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
     const expectedFilters = [
       'Manager filter',
       'Settlement Date filter',
-      'Settlement Mode filter',
-      'Activity Type filter',
       'Settlement Status filter',
-      'Blotter Code filter',
-      'Source filter',
-      'Trade Type filter',
-      'Trade ID filter',
       'Product filter',
     ];
 
     for (const label of expectedFilters) {
       expect(element.querySelector(`[aria-label="${label}"]`)).not.toBeNull();
+    }
+
+    for (const removedLabel of [
+      'Settlement Mode filter',
+      'Activity Type filter',
+      'Blotter Code filter',
+      'Source filter',
+      'Trade Type filter',
+      'Trade ID filter',
+    ]) {
+      expect(element.querySelector(`[aria-label="${removedLabel}"]`)).toBeNull();
     }
   });
 
@@ -182,22 +187,14 @@ describe('SettlementDetailsPanelComponent', () => {
   it('maps only top criteria to backend filters with the expected operators', () => {
     expect(
       mapToolbarFilters({
-        activityType: 'Prime Broker',
-        blotterCode: ' ',
         managerName: ' Capital ',
-        productId: '',
-        settlementMode: 'CNS',
+        productId: '462106',
         settlementStatus: 'Pending',
-        source: '',
-        tradeId: 'TRD-2026',
-        tradeType: '',
       }),
     ).toEqual([
-      { field: 'activityType', operator: 'equals', value: 'Prime Broker' },
       { field: 'managerName', operator: 'contains', value: 'Capital' },
-      { field: 'settlementMode', operator: 'equals', value: 'CNS' },
+      { field: 'productId', operator: 'contains', value: '462106' },
       { field: 'settlementStatus', operator: 'equals', value: 'Pending' },
-      { field: 'tradeId', operator: 'contains', value: 'TRD-2026' },
     ]);
   });
 

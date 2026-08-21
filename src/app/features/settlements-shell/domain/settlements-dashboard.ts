@@ -12,6 +12,17 @@ export interface CashPositionPoint extends SettlementBusinessUnitValues {
   readonly time: string;
 }
 
+export interface FailProjectionTradeValues {
+  readonly sellTrades: SettlementDashboardAmount;
+  readonly buyTrades: SettlementDashboardAmount;
+}
+
+export interface FailProjectionValues {
+  readonly settled: FailProjectionTradeValues;
+  readonly pending: FailProjectionTradeValues;
+  readonly fails: FailProjectionTradeValues;
+}
+
 export interface SettlementProjectionValues {
   readonly live: SettlementBusinessUnitValues;
   readonly snapshot0830: SettlementBusinessUnitValues;
@@ -40,7 +51,7 @@ export interface SettlementsDashboard {
   readonly requestId: string;
   readonly businessDate: string;
   readonly asOf: string;
-  readonly netCashPositions: SettlementBusinessUnitValues;
+  readonly failProjection: FailProjectionValues;
   readonly cashPositionsOverTime: readonly CashPositionPoint[];
   readonly projections: SettlementProjectionValues;
   readonly endOfDayMovement: EndOfDayMovementValues;

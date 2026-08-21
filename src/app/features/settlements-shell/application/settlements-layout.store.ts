@@ -1,23 +1,19 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, signal } from '@angular/core';
 
-export type SettlementLayoutHandle = 'leftRail' | 'rightSummary' | 'topRow' | 'totalsRow';
+export type SettlementLayoutHandle = 'leftRail' | 'topRow';
 
 export interface SettlementsLayout {
   readonly leftRailPercent: number;
-  readonly rightSummaryPercent: number;
   readonly topRowPercent: number;
-  readonly totalsRowPercent: number;
 }
 
 export const DEFAULT_SETTLEMENTS_LAYOUT: SettlementsLayout = Object.freeze({
-  leftRailPercent: 14,
-  rightSummaryPercent: 23,
+  leftRailPercent: 30,
   topRowPercent: 24,
-  totalsRowPercent: 18,
 });
 
-export const SETTLEMENTS_LAYOUT_STORAGE_KEY = 'settlements-shell.layout.v1';
+export const SETTLEMENTS_LAYOUT_STORAGE_KEY = 'settlements-shell.layout.v2';
 
 @Injectable()
 export class SettlementsLayoutStore {
@@ -82,29 +78,18 @@ export function resizeLayout(
   switch (handle) {
     case 'leftRail':
       return constrainLayout({ ...base, leftRailPercent: base.leftRailPercent + deltaPercent });
-    case 'rightSummary':
-      return constrainLayout({
-        ...base,
-        rightSummaryPercent: base.rightSummaryPercent - deltaPercent,
-      });
     case 'topRow':
       return constrainLayout({ ...base, topRowPercent: base.topRowPercent + deltaPercent });
-    case 'totalsRow':
-      return constrainLayout({ ...base, totalsRowPercent: base.totalsRowPercent - deltaPercent });
   }
 }
 
 function constrainLayout(layout: SettlementsLayout): SettlementsLayout {
-  const leftRailPercent = clamp(layout.leftRailPercent, 12, 32);
-  const rightSummaryPercent = clamp(layout.rightSummaryPercent, 18, 38);
+  const leftRailPercent = clamp(layout.leftRailPercent, 24, 42);
   const topRowPercent = clamp(layout.topRowPercent, 16, 46);
-  const totalsRowPercent = clamp(layout.totalsRowPercent, 12, Math.min(32, 76 - topRowPercent));
 
   return {
     leftRailPercent,
-    rightSummaryPercent: Math.min(rightSummaryPercent, 72 - leftRailPercent),
     topRowPercent,
-    totalsRowPercent,
   };
 }
 
@@ -115,10 +100,7 @@ function isSettlementsLayout(value: unknown): value is SettlementsLayout {
 
   const candidate = value as Readonly<Record<string, unknown>>;
   return (
-    Number.isFinite(candidate['leftRailPercent']) &&
-    Number.isFinite(candidate['rightSummaryPercent']) &&
-    Number.isFinite(candidate['topRowPercent']) &&
-    Number.isFinite(candidate['totalsRowPercent'])
+    Number.isFinite(candidate['leftRailPercent']) && Number.isFinite(candidate['topRowPercent'])
   );
 }
 

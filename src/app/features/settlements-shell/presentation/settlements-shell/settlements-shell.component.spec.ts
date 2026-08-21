@@ -25,19 +25,22 @@ describe('SettlementsShellComponent', () => {
     }).compileComponents();
   });
 
-  it('renders all six standalone settlement panels', async () => {
+  it('renders the two summary panels and expanded Settlement Details panel', async () => {
     const fixture = TestBed.createComponent(SettlementsShellComponent);
     fixture.detectChanges();
     await new Promise((resolve) => setTimeout(resolve, 100));
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('app-net-cash-position-panel')).not.toBeNull();
+    expect(element.querySelector('app-fail-projection-panel')).not.toBeNull();
+    expect(element.querySelector('app-net-cash-position-panel')).toBeNull();
     expect(element.querySelector('app-cash-positions-over-time-panel')).not.toBeNull();
-    expect(element.querySelector('app-end-of-day-movement-panel')).not.toBeNull();
-    expect(element.querySelector('app-projections-panel')).not.toBeNull();
-    expect(element.querySelector('app-settlement-totals-panel')).not.toBeNull();
     expect(element.querySelector('app-settlement-details-panel')).not.toBeNull();
+    expect(element.querySelector('app-end-of-day-movement-panel')).toBeNull();
+    expect(element.querySelector('app-projections-panel')).toBeNull();
+    expect(element.querySelector('app-settlement-totals-panel')).toBeNull();
+    expect(element.querySelector('[data-testid="resize-right-summary"]')).toBeNull();
+    expect(element.querySelector('[data-testid="resize-totals-row"]')).toBeNull();
     expect(element.querySelector('.settlements-shell__masthead')).toBeNull();
     expect(element.querySelector('.settlements-shell__navigation')).toBeNull();
   });
@@ -58,9 +61,9 @@ describe('SettlementsShellComponent', () => {
     expect(leftHandle?.getAttribute('aria-orientation')).toBe('vertical');
 
     leftHandle?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-    expect(layoutStore.layout().leftRailPercent).toBe(16);
+    expect(layoutStore.layout().leftRailPercent).toBe(32);
 
     reset?.click();
-    expect(layoutStore.layout().leftRailPercent).toBe(14);
+    expect(layoutStore.layout().leftRailPercent).toBe(30);
   });
 });

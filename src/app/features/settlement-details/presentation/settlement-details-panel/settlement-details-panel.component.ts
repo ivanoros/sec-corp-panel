@@ -39,38 +39,17 @@ interface SettlementColumn {
   readonly numericKind?: 'amount' | 'quantity';
 }
 
-type ToolbarFilterField =
-  | 'activityType'
-  | 'blotterCode'
-  | 'managerName'
-  | 'productId'
-  | 'settlementMode'
-  | 'settlementStatus'
-  | 'source'
-  | 'tradeId'
-  | 'tradeType';
+type ToolbarFilterField = 'managerName' | 'productId' | 'settlementStatus';
 
 export type ToolbarFilterValues = Readonly<Record<ToolbarFilterField, string>>;
 
 const EMPTY_TOOLBAR_FILTERS: ToolbarFilterValues = {
-  activityType: '',
-  blotterCode: '',
   managerName: '',
   productId: '',
-  settlementMode: '',
   settlementStatus: '',
-  source: '',
-  tradeId: '',
-  tradeType: '',
 };
 
-const EXACT_MATCH_TOOLBAR_FIELDS = new Set<ToolbarFilterField>([
-  'activityType',
-  'settlementMode',
-  'settlementStatus',
-  'source',
-  'tradeType',
-]);
+const EXACT_MATCH_TOOLBAR_FIELDS = new Set<ToolbarFilterField>(['settlementStatus']);
 
 const SETTLEMENT_COLUMNS: readonly SettlementColumn[] = [
   { field: 'settlementMode', headerName: 'Settlement Mode', width: 132, pinned: 'left' },
@@ -195,18 +174,7 @@ export class SettlementDetailsPanelComponent {
   readonly canGoToNextPage = computed(
     () => !this.isLoading() && this.serverPageIndex() + 1 < this.serverPageCount(),
   );
-  readonly activityTypeOptions = [
-    'Prime Broker',
-    'Other Agency and Principal',
-    'Cash Equity Client',
-    'Transfer as Trade',
-    'Other non-CNS Activity',
-    'PB Done With',
-  ];
-  readonly settlementModeOptions = ['CNS', 'DVP/RVP'];
   readonly settlementStatusOptions = ['Pending', 'Failed', 'Partial', 'Full'];
-  readonly sourceOptions = ['SOD-Batch', 'Intraday'];
-  readonly tradeTypeOptions = ['Buy Long', 'Sell Long', 'Sell Short', 'Cover Short'];
   readonly columnDefs = createSettlementColumnDefs();
   readonly defaultColDef: ColDef<SettlementDetail> = {
     editable: false,

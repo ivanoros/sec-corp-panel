@@ -1,0 +1,41 @@
+<app-settlement-panel-frame
+  title="Fail Projection"
+  [refreshing]="refreshing()"
+  (refreshRequested)="refreshRequested.emit()"
+>
+  <dl class="fail-projection">
+    <div aria-label="AF Sell Trades Settled" class="fail-projection__metric">
+      <dt>Settled</dt>
+      <dd>$ {{ formatAmount(values().settled.sellTrades) }}</dd>
+    </div>
+    <div
+      aria-label="AF Buy Trades Settled"
+      class="fail-projection__metric fail-projection__metric--buy"
+    >
+      <dt>Settled</dt>
+      <dd>$ {{ formatAmount(values().settled.buyTrades) }}</dd>
+    </div>
+    <div aria-label="AF Sell Trades Pending" class="fail-projection__metric">
+      <dt>Pending</dt>
+      <dd>$ {{ formatAmount(values().pending.sellTrades) }}</dd>
+    </div>
+    <div
+      aria-label="AF Buy Trades Pending"
+      class="fail-projection__metric fail-projection__metric--buy"
+    >
+      <dt>Pending</dt>
+      <dd>$ {{ formatAmount(values().pending.buyTrades) }}</dd>
+    </div>
+    <div aria-label="AF Sell Trades Fails" class="fail-projection__metric">
+      <dt>Fails</dt>
+      <dd>$ {{ formatAmount(values().fails.sellTrades) }}</dd>
+    </div>
+    <div
+      aria-label="AF Buy Trades Fails"
+      class="fail-projection__metric fail-projection__metric--buy"
+    >
+      <dt>Fails</dt>
+      <dd>$ {{ formatAmount(values().fails.buyTrades) }}</dd>
+    </div>
+  </dl>
+</app-settlement-panel-frame>

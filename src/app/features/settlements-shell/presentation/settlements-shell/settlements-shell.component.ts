@@ -19,21 +19,15 @@ import {
 import { SettlementsPollingCoordinator } from '../../application/settlements-polling.coordinator';
 import { SETTLEMENTS_DASHBOARD_DATA_PROVIDERS } from '../../data-access/settlements-dashboard-data.providers';
 import { CashPositionsOverTimePanelComponent } from '../cash-positions-over-time-panel/cash-positions-over-time-panel.component';
-import { EndOfDayMovementPanelComponent } from '../end-of-day-movement-panel/end-of-day-movement-panel.component';
-import { NetCashPositionPanelComponent } from '../net-cash-position-panel/net-cash-position-panel.component';
-import { ProjectionsPanelComponent } from '../projections-panel/projections-panel.component';
-import { SettlementTotalsPanelComponent } from '../settlement-totals-panel/settlement-totals-panel.component';
+import { FailProjectionPanelComponent } from '../fail-projection-panel/fail-projection-panel.component';
 
 @Component({
   selector: 'app-settlements-shell',
   standalone: true,
   imports: [
     CashPositionsOverTimePanelComponent,
-    EndOfDayMovementPanelComponent,
-    NetCashPositionPanelComponent,
-    ProjectionsPanelComponent,
+    FailProjectionPanelComponent,
     SettlementDetailsPanelComponent,
-    SettlementTotalsPanelComponent,
   ],
   templateUrl: './settlements-shell.component.html',
   styleUrl: './settlements-shell.component.scss',
@@ -66,9 +60,7 @@ export class SettlementsShellComponent implements OnInit {
 
     return {
       '--settlements-left-rail': `${layout.leftRailPercent}%`,
-      '--settlements-right-summary': `${layout.rightSummaryPercent}%`,
       '--settlements-top-row': `${layout.topRowPercent}%`,
-      '--settlements-totals-row': `${layout.totalsRowPercent}%`,
     };
   });
 
@@ -116,7 +108,7 @@ export class SettlementsShellComponent implements OnInit {
       return;
     }
 
-    const horizontal = resize.handle === 'leftRail' || resize.handle === 'rightSummary';
+    const horizontal = resize.handle === 'leftRail';
     const size = horizontal ? resize.width : resize.height;
     const delta = horizontal ? event.clientX - resize.startX : event.clientY - resize.startY;
 
@@ -140,7 +132,7 @@ export class SettlementsShellComponent implements OnInit {
   }
 
   resizeWithKeyboard(handle: SettlementLayoutHandle, event: KeyboardEvent): void {
-    const isHorizontal = handle === 'leftRail' || handle === 'rightSummary';
+    const isHorizontal = handle === 'leftRail';
     const negativeKey = isHorizontal ? 'ArrowLeft' : 'ArrowUp';
     const positiveKey = isHorizontal ? 'ArrowRight' : 'ArrowDown';
 

@@ -21,16 +21,15 @@ describe('SettlementsLayoutStore', () => {
 
     store.adjust('leftRail', 4);
 
-    expect(store.layout().leftRailPercent).toBe(18);
+    expect(store.layout().leftRailPercent).toBe(34);
     expect(JSON.parse(localStorage.getItem(SETTLEMENTS_LAYOUT_STORAGE_KEY) ?? '{}')).toMatchObject({
-      leftRailPercent: 18,
+      leftRailPercent: 34,
     });
   });
 
   it('constrains resizes so the central workspace remains usable', () => {
-    expect(resizeLayout(DEFAULT_SETTLEMENTS_LAYOUT, 'leftRail', 100).leftRailPercent).toBe(32);
+    expect(resizeLayout(DEFAULT_SETTLEMENTS_LAYOUT, 'leftRail', 100).leftRailPercent).toBe(42);
     expect(resizeLayout(DEFAULT_SETTLEMENTS_LAYOUT, 'topRow', -100).topRowPercent).toBe(16);
-    expect(resizeLayout(DEFAULT_SETTLEMENTS_LAYOUT, 'totalsRow', -100).totalsRowPercent).toBe(32);
   });
 
   it('removes the persisted layout when reset', () => {
@@ -38,7 +37,7 @@ describe('SettlementsLayoutStore', () => {
       providers: [SettlementsLayoutStore, { provide: DOCUMENT, useValue: document }],
     });
     const store = TestBed.inject(SettlementsLayoutStore);
-    store.adjust('rightSummary', -4);
+    store.adjust('topRow', 4);
 
     store.reset();
 

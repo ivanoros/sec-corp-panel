@@ -56,13 +56,7 @@ The request envelope remains backend-focused:
 | ----------------- | -------------------------------------- | -------------- |
 | Manager           | `filters[].field = "managerName"`      | `contains`     |
 | Settlement Date   | top-level `businessDate`               | Not applicable |
-| Settlement Mode   | `filters[].field = "settlementMode"`   | `equals`       |
-| Activity Type     | `filters[].field = "activityType"`     | `equals`       |
 | Settlement Status | `filters[].field = "settlementStatus"` | `equals`       |
-| Blotter Code      | `filters[].field = "blotterCode"`      | `contains`     |
-| Source            | `filters[].field = "source"`           | `equals`       |
-| Trade Type        | `filters[].field = "tradeType"`        | `equals`       |
-| Trade ID          | `filters[].field = "tradeId"`          | `contains`     |
 | Product           | `filters[].field = "productId"`        | `contains`     |
 
 Blank controls are omitted. Multiple criteria are combined with logical `AND`.
@@ -100,39 +94,9 @@ Text inputs are debounced for 350 milliseconds; dropdowns request immediately.
       "value": "Capital"
     },
     {
-      "field": "settlementMode",
-      "operator": "equals",
-      "value": "CNS"
-    },
-    {
-      "field": "activityType",
-      "operator": "equals",
-      "value": "Prime Broker"
-    },
-    {
       "field": "settlementStatus",
       "operator": "equals",
       "value": "Pending"
-    },
-    {
-      "field": "blotterCode",
-      "operator": "contains",
-      "value": "1W"
-    },
-    {
-      "field": "source",
-      "operator": "equals",
-      "value": "SOD-Batch"
-    },
-    {
-      "field": "tradeType",
-      "operator": "equals",
-      "value": "Buy Long"
-    },
-    {
-      "field": "tradeId",
-      "operator": "contains",
-      "value": "TRD-2026"
     },
     {
       "field": "productId",

@@ -17,7 +17,11 @@ export const settlementsDashboardSchema = z.object({
   requestId: z.string().trim().min(1),
   businessDate: z.iso.date(),
   asOf: z.iso.datetime({ offset: true }),
-  netCashPositions: businessUnitValuesSchema,
+  failProjection: z.object({
+    settled: z.object({ sellTrades: amountSchema, buyTrades: amountSchema }),
+    pending: z.object({ sellTrades: amountSchema, buyTrades: amountSchema }),
+    fails: z.object({ sellTrades: amountSchema, buyTrades: amountSchema }),
+  }),
   cashPositionsOverTime: z
     .array(
       businessUnitValuesSchema.extend({
